@@ -1,12 +1,15 @@
 package com.example.controlmaterial11;
 
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.controlmaterial11.databinding.SincronizarBinding;
 
 public class SincronizarActivity extends DrawerBaseActivity {
+    SincronizarBinding sincronizarBinding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.sincronizar);
+        sincronizarBinding = sincronizarBinding.inflate(getLayoutInflater());
+        setContentView(sincronizarBinding.getRoot());
     }
 }

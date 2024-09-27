@@ -24,12 +24,13 @@ public class LoginActivity extends AppCompatActivity {
 
         // Inicializar el DBHelper para interactuar con la base de datos
         dbHelper = new DBHelper(this);
+        dbHelper.insertarUsuario("nata", "123");
 
-        dbHelper.insertarUsuario("nata", "123");//usuario de prueba
         // Inicializar las vistas
         txtUsuario = findViewById(R.id.txtusuario);
         txtClave = findViewById(R.id.txtclave);
         btnIngresar = findViewById(R.id.btningresar);
+
 
         // Configurar la acción del botón de inicio de sesión
         btnIngresar.setOnClickListener(new View.OnClickListener() {
@@ -59,5 +60,8 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+
+
+
     }
 }
