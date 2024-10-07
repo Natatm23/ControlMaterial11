@@ -102,7 +102,7 @@
                     android:padding="8dp"
                     android:ems="10"
                     android:hint="COLONIA"
-                    android:inputType="text"
+                    android:inputType="textCapCharacters"
                     android:textColor="@color/black"
                     android:textColorHint="@color/cardview_dark_background" />
 
@@ -117,7 +117,7 @@
                     android:padding="8dp"
                     android:ems="10"
                     android:hint="DIRECCION"
-                    android:inputType="text"
+                    android:inputType="textCapCharacters"
                     android:textColor="@color/black"
                     android:textColorHint="@color/cardview_dark_background" />
 
@@ -132,7 +132,7 @@
                     android:padding="8dp"
                     android:ems="10"
                     android:hint="TIPO DE SUELO"
-                    android:inputType="text"
+                    android:inputType="textCapCharacters"
                     android:textColor="@color/black"
                     android:textColorHint="@color/cardview_dark_background" />
 
@@ -147,7 +147,7 @@
                     android:padding="8dp"
                     android:ems="10"
                     android:hint="REPORTANTE"
-                    android:inputType="text"
+                    android:inputType="textCapCharacters"
                     android:textColor="@color/black"
                     android:textColorHint="@color/cardview_dark_background" />
 
@@ -177,7 +177,7 @@
                     android:padding="8dp"
                     android:ems="10"
                     android:hint="TECNICO"
-                    android:inputType="text"
+                    android:inputType="textCapCharacters"
                     android:textColor="@color/black"
                     android:textColorHint="@color/cardview_dark_background" />
 
@@ -191,7 +191,7 @@
                     android:drawablePadding="8dp"
                     android:padding="8dp"
                     android:hint="MATERIAL"
-                    android:inputType="textMultiLine"
+                    android:inputType="textMultiLine|textCapCharacters"
                     android:textColor="@color/black"
                     android:textColorHint="@color/cardview_dark_background"
                     android:gravity="top|start"

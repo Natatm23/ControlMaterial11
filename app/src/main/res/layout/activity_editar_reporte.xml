@@ -185,6 +185,7 @@
                     android:layout_marginTop="10dp"
                     tools:ignore="HardcodedText" />
 
+                <!-- Etiqueta para el campo de Tipo de Suelo -->
                 <EditText
                     android:id="@+id/direccion"
                     android:layout_width="match_parent"
@@ -199,7 +200,6 @@
                     android:textColorHint="@color/cardview_dark_background"
                     tools:ignore="Autofill,SpeakableTextPresentCheck" />
 
-                <!-- Etiqueta para el campo de Tipo de Suelo -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

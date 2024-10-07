@@ -5,23 +5,28 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.MediaStore;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBHelper extends SQLiteOpenHelper {
 
-    // Definir el nombre y versión de la base de datos
     private static final String DATABASE_NAME = "Reportes_material.db";
     private static final int DATABASE_VERSION = 1;
 
-    // Nombre de las tablas
     private static final String TABLE_LOGIN = "Login";
     private static final String TABLE_REPORTES = "Reportes";
 
-    // Columnas de la tabla Login
     private static final String COLUMN_ID_USUARIO = "Id_Usuario";
     private static final String COLUMN_USERNAME = "Usuario";
     private static final String COLUMN_PASSWORD = "Contraseña";
 
-    // Columnas de la tabla Reportes
     private static final String COLUMN_ID_TICKET = "Id_ticket";
     private static final String COLUMN_FECHA_ASIGNACION = "Fecha_asignacion";
     private static final String COLUMN_FECHA_REPARACION = "Fecha_reparacion";
@@ -35,26 +40,20 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String COLUMN_IMAGEN_ANTES = "Imagen_antes";
     private static final String COLUMN_IMAGEN_DESPUES = "Imagen_despues";
 
-    // Constructor
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Habilitar soporte para claves foráneas
         db.execSQL("PRAGMA foreign_keys=ON;");
 
-        // Crear la tabla Login
         String CREATE_LOGIN_TABLE = "CREATE TABLE " + TABLE_LOGIN + "("
-                + COLUMN_ID_USUARIO + " INTEGER PRIMARY KEY, "
+                + COLUMN_ID_USUARIO + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COLUMN_USERNAME + " TEXT, "
                 + COLUMN_PASSWORD + " TEXT)";
         db.execSQL(CREATE_LOGIN_TABLE);
 
-
-
-        // Crear la tabla Reportes con la clave foránea Id_Usuario
         String CREATE_REPORTES_TABLE = "CREATE TABLE " + TABLE_REPORTES + "("
                 + COLUMN_ID_TICKET + " INTEGER PRIMARY KEY, "
                 + COLUMN_ID_USUARIO + " INTEGER NOT NULL, "
@@ -76,39 +75,21 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Eliminar las tablas si ya existen
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_LOGIN);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_REPORTES);
         onCreate(db);
     }
 
-    // Métodos para insertar, verificar, y manipular datos en la tabla Login
-
-    public boolean insertarUsuario(String usuario, String clave) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_USERNAME, usuario);
-        values.put(COLUMN_PASSWORD, clave);
-        long result = db.insert(TABLE_LOGIN, null, values);
-        return result != -1; // Devuelve true si se inserta correctamente
+    private byte[] reducirImagen(Uri imageUri, Context context) throws IOException {
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), imageUri);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
+        return outputStream.toByteArray();
     }
 
-    public boolean verificarUsuario(String usuario, String clave) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(TABLE_LOGIN,
-                new String[]{COLUMN_ID_USUARIO},
-                COLUMN_USERNAME + "=? AND " + COLUMN_PASSWORD + "=?",
-                new String[]{usuario, clave},
-                null, null, null);
-        boolean existe = cursor.getCount() > 0;
-        cursor.close();
-        return existe; // Devuelve true si las credenciales son correctas
-    }
-
-    // Métodos para insertar reportes
     public boolean insertarReporte(int id_usuario, String fecha_asignacion, String fecha_reparacion, String colonia,
                                    String tipo_suelo, String direccion, String reportante, String telefono_reportante,
-                                   String reparador, String material, byte[] imagen_antes, byte[] imagen_despues) {
+                                   String reparador, String material, Uri imagenAntesUri, Uri imagenDespuesUri, Context context) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_ID_USUARIO, id_usuario);
@@ -121,23 +102,146 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(COLUMN_TELEFONO_REPORTANTE, telefono_reportante);
         values.put(COLUMN_REPARADOR, reparador);
         values.put(COLUMN_MATERIAL, material);
-        values.put(COLUMN_IMAGEN_ANTES, imagen_antes);
-        values.put(COLUMN_IMAGEN_DESPUES, imagen_despues);
+
+        try {
+            if (imagenAntesUri != null) {
+                byte[] imagenAntes = reducirImagen(imagenAntesUri, context);
+                values.put(COLUMN_IMAGEN_ANTES, imagenAntes);
+            }
+            if (imagenDespuesUri != null) {
+                byte[] imagenDespues = reducirImagen(imagenDespuesUri, context);
+                values.put(COLUMN_IMAGEN_DESPUES, imagenDespues);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
         long result = db.insert(TABLE_REPORTES, null, values);
-        return result != -1; // Devuelve true si se inserta correctamente
+        // db.close(); // Cerrar la base de datos después de insertar <--- (comentado)
+        return result != -1;
     }
 
-    // Métodos para obtener reportes de la base de datos
-    public Cursor obtenerTodosLosReportes() {
+    public boolean insertarUsuario(String username, String password) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USERNAME, username);
+        values.put(COLUMN_PASSWORD, password);
+
+        long result = db.insert(TABLE_LOGIN, null, values);
+        // db.close(); // Cerrar la base de datos después de usarla <--- (comentado)
+        return result != -1;
+    }
+
+    public Cursor buscarReporte(int Id_ticket) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT * FROM " + TABLE_REPORTES, null);
+        Cursor cursor = null;
+
+        try {
+            String query = "SELECT Id_ticket, Fecha_asignacion, Fecha_reparacion, Colonia, Tipo_suelo, Direccion, Reportante, " +
+                    "Telefono_reportante, Reparador, Material, Imagen_antes, Imagen_despues " +
+                    "FROM " + TABLE_REPORTES + " WHERE Id_ticket = ?";
+            cursor = db.rawQuery(query, new String[]{String.valueOf(Id_ticket)});
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return cursor; // Retorna el cursor sin cerrarlo
     }
 
-    // Método para eliminar un reporte
     public boolean eliminarReporte(int id_ticket) {
         SQLiteDatabase db = this.getWritableDatabase();
-        return db.delete(TABLE_REPORTES, COLUMN_ID_TICKET + "=?", new String[]{String.valueOf(id_ticket)}) > 0;
+        boolean result = db.delete(TABLE_REPORTES, COLUMN_ID_TICKET + "=?", new String[]{String.valueOf(id_ticket)}) > 0;
+        // db.close(); // Cerrar la base de datos después de usarla <--- (comentado)
+        return result;
     }
 
+    public boolean verificarUsuario(String usuario, String clave) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        boolean existeUsuario = false;
+        Cursor cursor = null;
 
+        try {
+            String query = "SELECT * FROM " + TABLE_LOGIN + " WHERE " + COLUMN_USERNAME + " = ? AND " + COLUMN_PASSWORD + " = ?";
+            cursor = db.rawQuery(query, new String[]{usuario, clave});
+            existeUsuario = cursor.getCount() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close(); // Cerrar cursor <---
+            }
+            // db.close(); // Cerrar la base de datos después de usarla <--- (comentado)
+        }
+
+        return existeUsuario;
+    }
+
+    public List<Reporte> obtenerTodosLosReportes() {
+        List<Reporte> reportes = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT Id_ticket, Colonia, Direccion FROM " + TABLE_REPORTES;
+        Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                String idTicket = cursor.getString(cursor.getColumnIndex(COLUMN_ID_TICKET));
+                String colonia = cursor.getString(cursor.getColumnIndex(COLUMN_COLONIA));
+                String direccion = cursor.getString(cursor.getColumnIndex(COLUMN_DIRECCION));
+
+                Reporte reporte = new Reporte(idTicket, colonia, direccion);
+                reportes.add(reporte);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close(); // Cerrar cursor <---
+        // db.close(); // Cerrar la base de datos <--- (comentado)
+
+        return reportes;
+    }
+
+    public int obtenerIdUsuario(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int idUsuario = -1; // Valor predeterminado en caso de que no se encuentre el usuario
+        Cursor cursor = null;
+
+        try {
+            String query = "SELECT " + COLUMN_ID_USUARIO + " FROM " + TABLE_LOGIN + " WHERE " + COLUMN_USERNAME + " = ?";
+            cursor = db.rawQuery(query, new String[]{username});
+            if (cursor.moveToFirst()) {
+                idUsuario = cursor.getInt(cursor.getColumnIndex(COLUMN_ID_USUARIO));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close(); // Cerrar cursor <---
+            }
+            // db.close(); // Cerrar la base de datos <--- (comentado)
+        }
+
+        return idUsuario;
+    }
+
+    public boolean actualizarReporte(int id_ticket, String colonia, String direccion, String reportante,
+                                     String telefonoReportante, String tipoSuelo, String reparador,
+                                     String material, byte[] imagenAntes, byte[] imagenDespues) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("Colonia", colonia);
+        values.put("Direccion", direccion);
+        values.put("Reportante", reportante);
+        values.put("Telefono_reportante", telefonoReportante);
+        values.put("Tipo_suelo", tipoSuelo);
+        values.put("Reparador", reparador);
+        values.put("Material", material);
+        values.put("Imagen_antes", imagenAntes);
+        values.put("Imagen_despues", imagenDespues);
+
+        // Actualizar la fila con el ID del ticket
+        int rowsAffected = db.update("reportes", values, "Id_ticket = ?", new String[]{String.valueOf(id_ticket)});
+        db.close(); //cerrar curor <---
+        return rowsAffected > 0;  // Retorna true si se actualizaron filas
+    }
 }

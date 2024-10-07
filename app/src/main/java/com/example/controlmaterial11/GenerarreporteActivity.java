@@ -2,9 +2,12 @@ package com.example.controlmaterial11;
 
 import android.app.DatePickerDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -29,15 +32,15 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
     private static final int PICK_IMAGE = 1;
     private Uri imageUriAntes, imageUriDespues;
 
-    private EditText txt_ticket, txt_fecha_asignacion, txt_fecha_reparacion, txt_colonia, direccion,
-            txt_tipo_suelo, txt_reportante, txt_tel_reportante, txt_reparador, txt_material;
+    private EditText txt_ticket, txt_fecha_asignacion, txt_fecha_reparacion, txt_colonia,
+            txt_direccion, txt_tipo_suelo, txt_reportante, txt_tel_reportante, txt_reparador, txt_material;
     private ImageView imageViewEvidencia_antes, imageViewEvidencia_despues;
     private Button btn_seleccionar_imagen_antes, btn_seleccionar_imagen_despues, btn_generar_reporte;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        generarreporteBinding = generarreporteBinding.inflate(getLayoutInflater());
+        generarreporteBinding = ActivityGenerarreporteBinding.inflate(getLayoutInflater());
         setContentView(generarreporteBinding.getRoot());
 
         // Inicializar campos
@@ -45,7 +48,7 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
         txt_fecha_asignacion = findViewById(R.id.txt_fecha_asignacion);
         txt_fecha_reparacion = findViewById(R.id.txt_fecha_reparacion);
         txt_colonia = findViewById(R.id.txt_colonia);
-        direccion = findViewById(R.id.direccion);
+        txt_direccion = findViewById(R.id.direccion);
         txt_tipo_suelo = findViewById(R.id.txt_tipo_suelo);
         txt_reportante = findViewById(R.id.txt_reportante);
         txt_tel_reportante = findViewById(R.id.txt_tel_reportante);
@@ -94,6 +97,14 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && data != null) {
             Uri selectedImageUri = data.getData();
+
+            // Verificar si la URI es nula
+            if (selectedImageUri == null) {
+                Toast.makeText(this, "No se pudo obtener la imagen.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Cargar y mostrar la imagen
             if (requestCode == 1) {
                 imageUriAntes = selectedImageUri;
                 imageViewEvidencia_antes.setImageURI(imageUriAntes);
@@ -109,7 +120,7 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
         String fechaAsignacion = txt_fecha_asignacion.getText().toString();
         String fechaReparacion = txt_fecha_reparacion.getText().toString();
         String colonia = txt_colonia.getText().toString();
-        String direccionText = direccion.getText().toString();
+        String direccionText = txt_direccion.getText().toString();
         String tipoSuelo = txt_tipo_suelo.getText().toString();
         String reportante = txt_reportante.getText().toString();
         String telReportante = txt_tel_reportante.getText().toString();
@@ -119,74 +130,97 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
         if (ticket.isEmpty() || fechaAsignacion.isEmpty() || fechaReparacion.isEmpty() ||
                 colonia.isEmpty() || direccionText.isEmpty() || tipoSuelo.isEmpty() ||
                 reportante.isEmpty() || telReportante.isEmpty() || reparador.isEmpty() ||
-                material.isEmpty() || imageUriAntes == null || imageUriDespues == null) {
+                material.isEmpty()) {
             Toast.makeText(this, "Por favor, complete todos los campos.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Convertir imágenes a bytes
-        byte[] imagenAntes = convertImageToByte(imageUriAntes);
-        byte[] imagenDespues = convertImageToByte(imageUriDespues);
-
-        // Guardar el reporte en la base de datos
-        insertarReporte(ticket, fechaAsignacion, fechaReparacion,
-                colonia, direccionText, tipoSuelo,
-                reportante, telReportante, reparador,
-                material, imagenAntes, imagenDespues);
-    }
-
-    private void insertarReporte(String ticket, String fechaAsignacion, String fechaReparacion,
-                                 String colonia, String direccionText, String tipoSuelo,
-                                 String reportante, String telReportante, String reparador,
-                                 String material, byte[] imagenAntes, byte[] imagenDespues) {
-        // Crear una instancia de tu clase DBHelper
-        DBHelper dbHelper = new DBHelper(this);
-        SQLiteDatabase db = dbHelper.getWritableDatabase(); // Obtener una base de datos en modo escritura
-
-        // Iniciar una transacción
-        db.beginTransaction();
         try {
-            ContentValues values = new ContentValues();
-            // Asignar los valores a ContentValues
-            values.put("ticket", ticket);
-            values.put("fecha_asignacion", fechaAsignacion);
-            values.put("fecha_reparacion", fechaReparacion);
-            values.put("colonia", colonia);
-            values.put("direccion", direccionText);
-            values.put("tipo_suelo", tipoSuelo);
-            values.put("reportante", reportante);
-            values.put("tel_reportante", telReportante);
-            values.put("reparador", reparador);
-            values.put("material", material);
-            values.put("imagen_antes", imagenAntes);
-            values.put("imagen_despues", imagenDespues);
+            // Convertir las imágenes a byte arrays
+            byte[] imagenAntesBytes = imageUriAntes != null ? convertImageToBytes(imageUriAntes) : null;
+            byte[] imagenDespuesBytes = imageUriDespues != null ? convertImageToBytes(imageUriDespues) : null;
 
-            // Insertar los datos en la tabla reportes
-            db.insert("reportes", null, values);
+            // Llamar al método para insertar el reporte
+            boolean result = insertarReporte(ticket, fechaAsignacion, fechaReparacion, colonia,
+                    direccionText, tipoSuelo, reportante, telReportante, reparador, material,
+                    imagenAntesBytes, imagenDespuesBytes);
 
-            // Confirmar la transacción
-            db.setTransactionSuccessful();
-            Toast.makeText(this, "Reporte guardado con éxito en la base de datos.", Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            Log.e("GenerarreporteActivity", "Error al guardar el reporte: " + e.getMessage());
-            Toast.makeText(this, "Error al guardar el reporte: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        } finally {
-            // Finalizar la transacción
-            db.endTransaction();
-            // Cerrar la base de datos
-            db.close();
-        }
-    }
-
-    private byte[] convertImageToByte(Uri imageUri) {
-        try {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            return stream.toByteArray();
+            if (result) {
+                Toast.makeText(this, "Reporte generado exitosamente", Toast.LENGTH_SHORT).show();
+                limpiarCampos();  // Llamar al método para limpiar los campos
+            } else {
+                Toast.makeText(this, "Error al generar el reporte", Toast.LENGTH_SHORT).show();
+            }
         } catch (IOException e) {
-            Log.e("GenerarreporteActivity", "Error al convertir la imagen a byte: " + e.getMessage());
-            return null;
+            e.printStackTrace();
+            Toast.makeText(this, "Error al convertir las imágenes", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void limpiarCampos() {
+        txt_ticket.setText("");
+        txt_fecha_asignacion.setText("");
+        txt_fecha_reparacion.setText("");
+        txt_colonia.setText("");
+        txt_direccion.setText("");
+        txt_tipo_suelo.setText("");
+        txt_reportante.setText("");
+        txt_tel_reportante.setText("");
+        txt_reparador.setText("");
+        txt_material.setText("");
+
+        imageViewEvidencia_antes.setImageURI(null);
+        imageViewEvidencia_despues.setImageURI(null);
+
+        imageUriAntes = null;
+        imageUriDespues = null;
+    }
+
+    private byte[] convertImageToBytes(Uri imageUri) throws IOException {
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        return stream.toByteArray(); // Retorna el byte array de la imagen
+    }
+
+    private boolean insertarReporte(String ticket, String fechaAsignacion, String fechaReparacion,
+                                    String colonia, String direccionText, String tipoSuelo,
+                                    String reportante, String telReportante, String reparador,
+                                    String material, byte[] imagenAntesBytes, byte[] imagenDespuesBytes) {
+        DBHelper dbHelper = new DBHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int id_usuario = LoginActivity.idUsuario; // Asegúrate de que este id se esté pasando correctamente
+
+        // Verificar si el Id_ticket ya existe
+        String query = "SELECT COUNT(*) FROM reportes WHERE Id_ticket = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{ticket});
+        cursor.moveToFirst();
+        int count = cursor.getInt(0);
+        cursor.close();
+
+        if (count > 0) {
+            Toast.makeText(this, "El ticket ya existe en la base de datos", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        ContentValues values = new ContentValues();
+        values.put("Id_ticket", ticket);
+        values.put("Fecha_asignacion", fechaAsignacion);
+        values.put("Fecha_reparacion", fechaReparacion);
+        values.put("Colonia", colonia);
+        values.put("Direccion", direccionText);
+        values.put("Tipo_suelo", tipoSuelo);
+        values.put("Reportante", reportante);
+        values.put("Telefono_reportante", telReportante);
+        values.put("Reparador", reparador);
+        values.put("Material", material);
+        values.put("Imagen_antes", imagenAntesBytes);
+        values.put("Imagen_despues", imagenDespuesBytes);
+        values.put("id_usuario", id_usuario); // Asegúrate de que el id_usuario se esté pasando correctamente
+
+        long newRowId = db.insert("reportes", null, values);
+        db.close();
+
+        return newRowId != -1; // Retorna true si la inserción fue exitosa
     }
 }

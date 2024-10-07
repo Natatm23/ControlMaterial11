@@ -6,6 +6,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import com.example.controlmaterial11.DBHelper;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -16,6 +18,7 @@ public class LoginActivity extends AppCompatActivity {
     private Button btnIngresar;
     private DBHelper dbHelper;
 
+    public static int idUsuario; // Variable estática para almacenar el ID del usuario
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,13 +27,13 @@ public class LoginActivity extends AppCompatActivity {
 
         // Inicializar el DBHelper para interactuar con la base de datos
         dbHelper = new DBHelper(this);
-        dbHelper.insertarUsuario("nata", "123");
+
+        dbHelper.insertarUsuario("nata", "123"); //usuario de prueba
 
         // Inicializar las vistas
         txtUsuario = findViewById(R.id.txtusuario);
         txtClave = findViewById(R.id.txtclave);
         btnIngresar = findViewById(R.id.btningresar);
-
 
         // Configurar la acción del botón de inicio de sesión
         btnIngresar.setOnClickListener(new View.OnClickListener() {
@@ -48,6 +51,9 @@ public class LoginActivity extends AppCompatActivity {
                     boolean existeUsuario = dbHelper.verificarUsuario(usuario, clave);
 
                     if (existeUsuario) {
+                        // Obtener el id_usuario
+                        idUsuario = dbHelper.obtenerIdUsuario(usuario);
+
                         // Si las credenciales son correctas, redirigir a otra actividad
                         Toast.makeText(LoginActivity.this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(LoginActivity.this, InicioActivity.class);
@@ -60,8 +66,5 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
-
-
-
     }
 }
