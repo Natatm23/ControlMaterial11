@@ -2,23 +2,17 @@ package com.example.controlmaterial11;
 
 import android.app.DatePickerDialog;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.controlmaterial11.databinding.ActivityGenerarreporteBinding;
 
@@ -179,9 +173,19 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
     private byte[] convertImageToBytes(Uri imageUri) throws IOException {
         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        // Comprimir y verificar el tamaño
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-        return stream.toByteArray(); // Retorna el byte array de la imagen
+        byte[] imageBytes = stream.toByteArray();
+        while (imageBytes.length > 20 * 1024 * 1024) { // Mientras sea mayor a 20 MB
+            stream.reset(); // Resetear el stream para recomprimir
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream); // Reducir calidad en 10%
+            imageBytes = stream.toByteArray(); // Obtener el nuevo array
+        }
+
+        return imageBytes;
     }
+
 
     private boolean insertarReporte(String ticket, String fechaAsignacion, String fechaReparacion,
                                     String colonia, String direccionText, String tipoSuelo,

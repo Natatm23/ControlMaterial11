@@ -173,7 +173,6 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
         }
     }
 
-    // Método para guardar los cambios del reporte
     private void guardarCambiosReporte() {
         if (id_ticketActual == -1) {
             Toast.makeText(this, "Primero busca un reporte para editar", Toast.LENGTH_SHORT).show();
@@ -188,17 +187,33 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
         String reparador = editarReporteBinding.txtReparador.getText().toString().trim();
         String material = editarReporteBinding.txtMaterial.getText().toString().trim();
 
+        // Obtener las imágenes actuales de la base de datos si no han sido modificadas
         byte[] imagenAntesBytes = null;
         byte[] imagenDespuesBytes = null;
 
         if (imageUriAntes != null) {
+            // Si se seleccionó una nueva imagen para 'antes', la convertimos a bytes
             imagenAntesBytes = convertirUriABytes(imageUriAntes);
+        } else {
+            // Si no se seleccionó una nueva imagen, mantenemos la imagen que ya estaba en la base de datos
+            Cursor cursor = dbHelper.buscarReporte(id_ticketActual);
+            if (cursor != null && cursor.moveToFirst()) {
+                imagenAntesBytes = cursor.getBlob(cursor.getColumnIndexOrThrow("Imagen_antes"));
+                cursor.close();
+            }
         }
 
         if (imageUriDespues != null) {
+            // Si se seleccionó una nueva imagen para 'después', la convertimos a bytes
             imagenDespuesBytes = convertirUriABytes(imageUriDespues);
+        } else {
+            // Si no se seleccionó una nueva imagen, mantenemos la imagen que ya estaba en la base de datos
+            Cursor cursor = dbHelper.buscarReporte(id_ticketActual);
+            if (cursor != null && cursor.moveToFirst()) {
+                imagenDespuesBytes = cursor.getBlob(cursor.getColumnIndexOrThrow("Imagen_despues"));
+                cursor.close();
+            }
         }
-
 
         // Actualizar el reporte en la base de datos
         boolean resultado = dbHelper.actualizarReporte(
@@ -214,7 +229,6 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
                 imagenDespuesBytes
         );
 
-
         if (resultado) {
             Toast.makeText(this, "Reporte actualizado exitosamente", Toast.LENGTH_SHORT).show();
             limpiarCampos(); // Limpiar campos después de guardar
@@ -222,6 +236,7 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
             Toast.makeText(this, "Error al actualizar el reporte", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     // Método para convertir una Uri en un byte array
     private byte[] convertirUriABytes(Uri uri) {

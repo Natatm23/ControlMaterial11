@@ -83,9 +83,24 @@ public class DBHelper extends SQLiteOpenHelper {
     private byte[] reducirImagen(Uri imageUri, Context context) throws IOException {
         Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), imageUri);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
+
+        int calidad = 100; // Comenzar con la calidad máxima
+        bitmap.compress(Bitmap.CompressFormat.JPEG, calidad, outputStream);
+
+        // Obtener el tamaño en MB (1 MB = 1024 * 1024 bytes)
+        double tamañoEnMB = outputStream.size() / (1024.0 * 1024.0);
+
+        // Si la imagen es mayor a 20 MB, reducir la calidad progresivamente
+        while (tamañoEnMB > 20 && calidad > 10) {
+            outputStream.reset(); // Limpiar el buffer
+            calidad -= 10; // Reducir calidad en incrementos de 10
+            bitmap.compress(Bitmap.CompressFormat.JPEG, calidad, outputStream);
+            tamañoEnMB = outputStream.size() / (1024.0 * 1024.0);
+        }
+
         return outputStream.toByteArray();
     }
+
 
     public boolean insertarReporte(int id_usuario, String fecha_asignacion, String fecha_reparacion, String colonia,
                                    String tipo_suelo, String direccion, String reportante, String telefono_reportante,
