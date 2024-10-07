@@ -242,4 +242,4 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
         return newRowId != -1; // Retorna true si la inserción fue exitosa
     }
 }
-//holaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+//holaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaeserga
