@@ -241,7 +241,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public boolean actualizarReporte(int id_ticket, String colonia, String direccion, String reportante,
                                      String telefonoReportante, String tipoSuelo, String reparador,
-                                     String material, byte[] imagenAntes, byte[] imagenDespues) {
+                                     String material,String fechaAsignacion, String fechaReparacion, byte[] imagenAntes, byte[] imagenDespues) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("Colonia", colonia);
@@ -251,6 +251,8 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("Tipo_suelo", tipoSuelo);
         values.put("Reparador", reparador);
         values.put("Material", material);
+        values.put("Fecha_asignacion", fechaAsignacion);
+        values.put("Fecha_reparacion", fechaReparacion);
         values.put("Imagen_antes", imagenAntes);
         values.put("Imagen_despues", imagenDespues);
 
@@ -261,4 +263,3 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 }
 
-//hola mundo

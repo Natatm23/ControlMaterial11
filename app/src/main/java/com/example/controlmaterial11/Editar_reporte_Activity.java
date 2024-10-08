@@ -1,5 +1,6 @@
 package com.example.controlmaterial11;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -8,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -17,6 +19,7 @@ import com.example.controlmaterial11.databinding.ActivityEditarReporteBinding;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Calendar;
 
 public class Editar_reporte_Activity extends DrawerBaseActivity {
     ActivityEditarReporteBinding editarReporteBinding;
@@ -38,6 +41,10 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
         // Inicializar DBHelper
         dbHelper = new DBHelper(this);
 
+        // Configurar el DatePicker para los campos de fecha
+        setupDatePicker(editarReporteBinding.txtFechaAsignacion);
+        setupDatePicker(editarReporteBinding.txtFechaReparacion);
+
         // Configurar el botón de búsqueda
         editarReporteBinding.buttonBuscar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,6 +60,30 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
         });
 
         // Configurar el botón para seleccionar imagen antes
+        editarReporteBinding.btnSeleccionarImagenAntes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                seleccionarImagen(REQUEST_IMAGE_BEFORE);
+            }
+        });
+
+        // Configurar el botón para seleccionar imagen después
+        editarReporteBinding.btnSeleccionarImagenDespues.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                seleccionarImagen(REQUEST_IMAGE_AFTER);
+            }
+        });
+
+        // Configurar el botón de guardar
+        editarReporteBinding.btnEditarReporte.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                guardarCambiosReporte();
+            }
+        });
+
+    // Configurar el botón para seleccionar imagen antes
         editarReporteBinding.btnSeleccionarImagenAntes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -151,6 +182,23 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
         }
     }
 
+    private void setupDatePicker(EditText editText) {
+        editText.setOnClickListener(v -> {
+            Calendar calendar = Calendar.getInstance();
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH);
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+            DatePickerDialog datePickerDialog = new DatePickerDialog(
+                    Editar_reporte_Activity.this,
+                    (view, selectedYear, selectedMonth, selectedDay) -> {
+                        String date = selectedDay + "/" + (selectedMonth + 1) + "/" + selectedYear;
+                        editText.setText(date);
+                    }, year, month, day);
+            datePickerDialog.show();
+        });
+    }
+
 
     // Método para seleccionar una imagen
     private void seleccionarImagen(int requestCode) {
@@ -179,6 +227,10 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
             return;
         }
 
+        // Capturar las fechas de los campos de texto
+        String fechaAsignacion = editarReporteBinding.txtFechaAsignacion.getText().toString().trim();
+        String fechaReparacion = editarReporteBinding.txtFechaReparacion.getText().toString().trim();
+
         String colonia = editarReporteBinding.txtColonia.getText().toString().trim();
         String direccion = editarReporteBinding.direccion.getText().toString().trim();
         String tipoSuelo = editarReporteBinding.txtTipoSuelo.getText().toString().trim();
@@ -192,10 +244,8 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
         byte[] imagenDespuesBytes = null;
 
         if (imageUriAntes != null) {
-            // Si se seleccionó una nueva imagen para 'antes', la convertimos a bytes
             imagenAntesBytes = convertirUriABytes(imageUriAntes);
         } else {
-            // Si no se seleccionó una nueva imagen, mantenemos la imagen que ya estaba en la base de datos
             Cursor cursor = dbHelper.buscarReporte(id_ticketActual);
             if (cursor != null && cursor.moveToFirst()) {
                 imagenAntesBytes = cursor.getBlob(cursor.getColumnIndexOrThrow("Imagen_antes"));
@@ -204,10 +254,8 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
         }
 
         if (imageUriDespues != null) {
-            // Si se seleccionó una nueva imagen para 'después', la convertimos a bytes
             imagenDespuesBytes = convertirUriABytes(imageUriDespues);
         } else {
-            // Si no se seleccionó una nueva imagen, mantenemos la imagen que ya estaba en la base de datos
             Cursor cursor = dbHelper.buscarReporte(id_ticketActual);
             if (cursor != null && cursor.moveToFirst()) {
                 imagenDespuesBytes = cursor.getBlob(cursor.getColumnIndexOrThrow("Imagen_despues"));
@@ -215,7 +263,7 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
             }
         }
 
-        // Actualizar el reporte en la base de datos
+        // Actualizar el reporte en la base de datos con las fechas incluidas
         boolean resultado = dbHelper.actualizarReporte(
                 id_ticketActual,
                 colonia,
@@ -225,6 +273,8 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
                 tipoSuelo,
                 reparador,
                 material,
+                fechaAsignacion,
+                fechaReparacion,
                 imagenAntesBytes,
                 imagenDespuesBytes
         );
@@ -236,6 +286,7 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
             Toast.makeText(this, "Error al actualizar el reporte", Toast.LENGTH_SHORT).show();
         }
     }
+
 
 
     // Método para convertir una Uri en un byte array
