@@ -88,8 +88,6 @@ public class DrawerBaseActivity extends AppCompatActivity implements NavigationV
             iniciarNuevaActividad(Editar_reporte_Activity.class);
         } else if (itemId == R.id.informacion) {
             iniciarNuevaActividad(Acerca_de_Activity.class);
-        } else if (itemId == R.id.descargar_reporte) {
-            iniciarNuevaActividad(DescargarReporteActivity.class);
         } else if (itemId == R.id.sincronizar_reportes) {
             iniciarNuevaActividad(SincronizarActivity.class);
         }

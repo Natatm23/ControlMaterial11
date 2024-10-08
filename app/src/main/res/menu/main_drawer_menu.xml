@@ -21,10 +21,6 @@
             android:icon="@drawable/eliminar_reporte"
             android:title="ELIMINAR REPORTE" />
 
-        <item
-            android:id="@+id/descargar_reporte"
-            android:icon="@drawable/descargar"
-            android:title="DESCARGAR REPORTE" />
 
         <item
             android:id="@+id/sincronizar_reportes"

@@ -51,18 +51,26 @@ public class LoginActivity extends AppCompatActivity {
                     boolean existeUsuario = dbHelper.verificarUsuario(usuario, clave);
 
                     if (existeUsuario) {
-                        // Obtener el id_usuario
+                        // Obtener el id_usuario y el nombre del usuario
                         idUsuario = dbHelper.obtenerIdUsuario(usuario);
 
                         // Si las credenciales son correctas, redirigir a otra actividad
                         Toast.makeText(LoginActivity.this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
+
+                        // Crear el intent para pasar a la siguiente actividad
                         Intent intent = new Intent(LoginActivity.this, InicioActivity.class);
+
+                        // Pasar el nombre de usuario a la siguiente actividad
+                        intent.putExtra("nombre_usuario", usuario);
+
+                        // Iniciar la nueva actividad
                         startActivity(intent);
                         finish(); // Finalizar la actividad de inicio de sesión
                     } else {
                         // Si las credenciales son incorrectas, mostrar un mensaje de error
                         Toast.makeText(LoginActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
                     }
+
                 }
             }
         });

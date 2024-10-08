@@ -223,9 +223,10 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
             }
         }
 
-        // Actualizar el reporte en la base de datos
-        boolean success = dbHelper.actualizarReporte(id_ticketActual, fechaAsignacion, fechaReparacion, colonia, direccion,
-                tipoSuelo, reportante, telefonoReportante, reparador, material, imagenAntesBytes, imagenDespuesBytes);
+        boolean success = dbHelper.actualizarReporte(id_ticketActual, colonia, direccion, reportante,
+                telefonoReportante, tipoSuelo, reparador, material, fechaAsignacion, fechaReparacion,
+                imagenAntesBytes, imagenDespuesBytes);
+
 
         if (success) {
             Toast.makeText(this, "Reporte actualizado correctamente", Toast.LENGTH_SHORT).show();

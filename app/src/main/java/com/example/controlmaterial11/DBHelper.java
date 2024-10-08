@@ -213,15 +213,19 @@ public class DBHelper extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                String idTicket = cursor.getString(cursor.getColumnIndex(COLUMN_ID_TICKET));
-                String colonia = cursor.getString(cursor.getColumnIndex(COLUMN_COLONIA));
-                String direccion = cursor.getString(cursor.getColumnIndex(COLUMN_DIRECCION));
+                try {
+                    // Usa getColumnIndexOrThrow para manejar mejor los errores
+                    String idTicket = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ID_TICKET));
+                    String colonia = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COLONIA));
+                    String direccion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DIRECCION));
 
-                Reporte reporte = new Reporte(idTicket, colonia, direccion);
-                reportes.add(reporte);
+                    Reporte reporte = new Reporte(idTicket, colonia, direccion);
+                    reportes.add(reporte);
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();  // Esto te permitirá ver si alguna columna no existe
+                }
             } while (cursor.moveToNext());
         }
-
         cursor.close(); // Cerrar cursor <---
         // db.close(); // Cerrar la base de datos <--- (comentado)
 
@@ -237,19 +241,21 @@ public class DBHelper extends SQLiteOpenHelper {
             String query = "SELECT " + COLUMN_ID_USUARIO + " FROM " + TABLE_LOGIN + " WHERE " + COLUMN_USERNAME + " = ?";
             cursor = db.rawQuery(query, new String[]{username});
             if (cursor.moveToFirst()) {
-                idUsuario = cursor.getInt(cursor.getColumnIndex(COLUMN_ID_USUARIO));
+                // Usa getColumnIndexOrThrow para manejar mejor el error
+                int columnIndex = cursor.getColumnIndexOrThrow(COLUMN_ID_USUARIO);
+                idUsuario = cursor.getInt(columnIndex);
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             if (cursor != null) {
-                cursor.close(); // Cerrar cursor <---
+                cursor.close(); // Cerrar cursor
             }
-            // db.close(); // Cerrar la base de datos <--- (comentado)
+            // db.close(); // Cerrar la base de datos si es necesario
         }
-
         return idUsuario;
     }
+
 
     public boolean actualizarReporte(int id_ticket, String colonia, String direccion, String reportante,
                                      String telefonoReportante, String tipoSuelo, String reparador,

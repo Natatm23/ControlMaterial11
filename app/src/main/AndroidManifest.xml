@@ -39,10 +39,6 @@
         <activity
             android:name=".GenerarreporteActivity"
             android:exported="false" />
-
-        <activity android:name=".DescargarReporteActivity"
-            android:exported="false"/>
-
         <activity
             android:name=".DrawerBaseActivity"
             android:exported="false" />
