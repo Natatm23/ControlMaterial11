@@ -84,21 +84,33 @@ public class DBHelper extends SQLiteOpenHelper {
         Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), imageUri);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
+        // Reduce la calidad de la imagen en decrementos de 10% hasta que se alcance la calidad mínima
         int calidad = 100; // Comenzar con la calidad máxima
         bitmap.compress(Bitmap.CompressFormat.JPEG, calidad, outputStream);
 
-        // Obtener el tamaño en MB (1 MB = 1024 * 1024 bytes)
-        double tamañoEnMB = outputStream.size() / (1024.0 * 1024.0);
+        // Redimensionar la imagen si es necesario (opcional)
+        // Puedes definir un ancho y alto máximos
+        int maxWidth = 800; // Ancho máximo deseado
+        int maxHeight = 800; // Alto máximo deseado
+        if (bitmap.getWidth() > maxWidth || bitmap.getHeight() > maxHeight) {
+            bitmap = Bitmap.createScaledBitmap(bitmap, maxWidth, maxHeight, true);
+            outputStream.reset(); // Limpiar el buffer
+            bitmap.compress(Bitmap.CompressFormat.JPEG, calidad, outputStream);
+        }
 
-        // Si la imagen es mayor a 20 MB, reducir la calidad progresivamente
-        while (tamañoEnMB > 20 && calidad > 10) {
+        // Si la imagen aún es demasiado grande, seguir reduciendo calidad
+        while (outputStream.size() > 0 && calidad > 0) {
             outputStream.reset(); // Limpiar el buffer
             calidad -= 10; // Reducir calidad en incrementos de 10
             bitmap.compress(Bitmap.CompressFormat.JPEG, calidad, outputStream);
-            tamañoEnMB = outputStream.size() / (1024.0 * 1024.0);
         }
 
-        return outputStream.toByteArray();
+        // Convertir a byte array y liberar memoria
+        byte[] imagenReducida = outputStream.toByteArray();
+        bitmap.recycle(); // Liberar recursos
+        outputStream.close(); // Cerrar el OutputStream
+
+        return imagenReducida;
     }
 
 

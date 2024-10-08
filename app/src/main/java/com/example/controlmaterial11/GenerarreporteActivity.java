@@ -2,6 +2,7 @@ package com.example.controlmaterial11;
 
 import android.app.DatePickerDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -131,8 +132,8 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
 
         try {
             // Convertir las imágenes a byte arrays
-            byte[] imagenAntesBytes = imageUriAntes != null ? convertImageToBytes(imageUriAntes) : null;
-            byte[] imagenDespuesBytes = imageUriDespues != null ? convertImageToBytes(imageUriDespues) : null;
+            byte[] imagenAntesBytes = imageUriAntes != null ? reducirImagen(imageUriAntes, this) : null;
+            byte[] imagenDespuesBytes = imageUriDespues != null ? reducirImagen(imageUriDespues, this) : null;
 
             // Verificar si alguna de las imágenes excedió el tamaño permitido
             if (imagenAntesBytes == null && imageUriAntes != null) {
@@ -161,45 +162,29 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
         }
     }
 
+    private byte[] reducirImagen(Uri imageUri, Context context) throws IOException {
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), imageUri);
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
 
-    private void limpiarCampos() {
-        txt_ticket.setText("");
-        txt_fecha_asignacion.setText("");
-        txt_fecha_reparacion.setText("");
-        txt_colonia.setText("");
-        txt_direccion.setText("");
-        txt_tipo_suelo.setText("");
-        txt_reportante.setText("");
-        txt_tel_reportante.setText("");
-        txt_reparador.setText("");
-        txt_material.setText("");
+        // Comprobar si el tamaño de la imagen es mayor a 10 MB
+        if (bitmap.getAllocationByteCount() > 10 * 1024 * 1024) {
+            // Reducir la imagen
+            int newWidth = width / 2; // Reducir a la mitad
+            int newHeight = height / 2;
+            Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, false);
 
-        imageViewEvidencia_antes.setImageURI(null);
-        imageViewEvidencia_despues.setImageURI(null);
-
-        imageUriAntes = null;
-        imageUriDespues = null;
-    }
-
-    private byte[] convertImageToBytes(Uri imageUri) throws IOException {
-        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
-        // Comprimir la imagen inicialmente
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-        byte[] imageBytes = stream.toByteArray();
-
-        // Verificar si la imagen supera los 20 MB
-        if (imageBytes.length > 20 * 1024 * 1024) {
-            // Mostrar advertencia si la imagen es mayor al límite permitido
-            Toast.makeText(this, "La imagen excede el tamaño máximo permitido de 20MB. Por favor, seleccione una imagen más pequeña.", Toast.LENGTH_LONG).show();
-            return null; // Devolver null para evitar procesar una imagen demasiado grande
+            // Convertir la imagen a byte array
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+            return stream.toByteArray();
         }
 
-        // Si la imagen es aceptable, devolver el array de bytes
-        return imageBytes;
+        // Si el tamaño es adecuado, convertir la imagen a byte array directamente
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        return stream.toByteArray();
     }
-
 
     private boolean insertarReporte(String ticket, String fechaAsignacion, String fechaReparacion,
                                     String colonia, String direccionText, String tipoSuelo,
@@ -207,7 +192,7 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
                                     String material, byte[] imagenAntesBytes, byte[] imagenDespuesBytes) {
         DBHelper dbHelper = new DBHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        int id_usuario = LoginActivity.idUsuario; // Asegúrate de que este id se esté pasando correctamente
+        int id_usuario = LoginActivity.idUsuario;
 
         // Verificar si el Id_ticket ya existe
         String query = "SELECT COUNT(*) FROM reportes WHERE Id_ticket = ?";
@@ -234,11 +219,28 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
         values.put("Material", material);
         values.put("Imagen_antes", imagenAntesBytes);
         values.put("Imagen_despues", imagenDespuesBytes);
-        values.put("id_usuario", id_usuario); // Asegúrate de que el id_usuario se esté pasando correctamente
+        values.put("id_usuario", id_usuario);
 
         long newRowId = db.insert("reportes", null, values);
         db.close();
 
         return newRowId != -1; // Retorna true si la inserción fue exitosa
+    }
+
+    private void limpiarCampos() {
+        txt_ticket.setText("");
+        txt_fecha_asignacion.setText("");
+        txt_fecha_reparacion.setText("");
+        txt_colonia.setText("");
+        txt_direccion.setText("");
+        txt_tipo_suelo.setText("");
+        txt_reportante.setText("");
+        txt_tel_reportante.setText("");
+        txt_reparador.setText("");
+        txt_material.setText("");
+        imageViewEvidencia_antes.setImageResource(0);
+        imageViewEvidencia_despues.setImageResource(0);
+        imageUriAntes = null;
+        imageUriDespues = null;
     }
 }

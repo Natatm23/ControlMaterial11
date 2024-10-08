@@ -82,45 +82,6 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
                 guardarCambiosReporte();
             }
         });
-
-    // Configurar el botón para seleccionar imagen antes
-        editarReporteBinding.btnSeleccionarImagenAntes.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                seleccionarImagen(REQUEST_IMAGE_BEFORE);
-            }
-        });
-
-        // Configurar el botón para seleccionar imagen después
-        editarReporteBinding.btnSeleccionarImagenDespues.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                seleccionarImagen(REQUEST_IMAGE_AFTER);
-            }
-        });
-
-        // Configurar la selección de imágenes (si es necesario)
-        editarReporteBinding.imageViewEvidenciaAntes.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                seleccionarImagen(REQUEST_IMAGE_BEFORE);
-            }
-        });
-
-        editarReporteBinding.imageViewEvidenciaDespues.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                seleccionarImagen(REQUEST_IMAGE_AFTER);
-            }
-        });
-
-        // Configurar el botón de guardar
-        editarReporteBinding.btnEditarReporte.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                guardarCambiosReporte();
-            }
-        });
     }
 
     private void buscarYMostrarReporte(int id_ticket) {
@@ -199,7 +160,6 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
         });
     }
 
-
     // Método para seleccionar una imagen
     private void seleccionarImagen(int requestCode) {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -263,67 +223,30 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
             }
         }
 
-        // Actualizar el reporte en la base de datos con las fechas incluidas
-        boolean resultado = dbHelper.actualizarReporte(
-                id_ticketActual,
-                colonia,
-                direccion,
-                reportante,
-                telefonoReportante,
-                tipoSuelo,
-                reparador,
-                material,
-                fechaAsignacion,
-                fechaReparacion,
-                imagenAntesBytes,
-                imagenDespuesBytes
-        );
+        // Actualizar el reporte en la base de datos
+        boolean success = dbHelper.actualizarReporte(id_ticketActual, fechaAsignacion, fechaReparacion, colonia, direccion,
+                tipoSuelo, reportante, telefonoReportante, reparador, material, imagenAntesBytes, imagenDespuesBytes);
 
-        if (resultado) {
-            Toast.makeText(this, "Reporte actualizado exitosamente", Toast.LENGTH_SHORT).show();
-            limpiarCampos(); // Limpiar campos después de guardar
+        if (success) {
+            Toast.makeText(this, "Reporte actualizado correctamente", Toast.LENGTH_SHORT).show();
+            finish();
         } else {
             Toast.makeText(this, "Error al actualizar el reporte", Toast.LENGTH_SHORT).show();
         }
     }
 
-
-
-    // Método para convertir una Uri en un byte array
+    // Método para convertir una URI de imagen a un array de bytes
     private byte[] convertirUriABytes(Uri uri) {
         try {
+            // Redimensionar la imagen
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
-            if (bitmap == null) {
-                Toast.makeText(this, "No se pudo cargar la imagen", Toast.LENGTH_SHORT).show();
-                return null;
-            }
+            Bitmap bitmapRedimensionado = Bitmap.createScaledBitmap(bitmap, 800, 800, true);
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+            bitmapRedimensionado.compress(Bitmap.CompressFormat.JPEG, 100, stream);
             return stream.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
-            Toast.makeText(this, "Error al convertir la imagen", Toast.LENGTH_SHORT).show();
             return null;
         }
-    }
-
-    // Método para limpiar los campos
-    private void limpiarCampos() {
-        editarReporteBinding.editTextBusqueda.setText("");
-        editarReporteBinding.txtTicket.setText("");
-        editarReporteBinding.txtFechaAsignacion.setText("");
-        editarReporteBinding.txtFechaReparacion.setText("");
-        editarReporteBinding.txtColonia.setText("");
-        editarReporteBinding.txtTipoSuelo.setText("");
-        editarReporteBinding.direccion.setText("");
-        editarReporteBinding.txtReportante.setText("");
-        editarReporteBinding.txtTelReportante.setText("");
-        editarReporteBinding.txtReparador.setText("");
-        editarReporteBinding.txtMaterial.setText("");
-        editarReporteBinding.imageViewEvidenciaAntes.setImageResource(R.drawable.info);
-        editarReporteBinding.imageViewEvidenciaDespues.setImageResource(R.drawable.info);
-        imageUriAntes = null;
-        imageUriDespues = null;
-        id_ticketActual = -1;  // Resetear el ID del ticket actual
     }
 }
