@@ -88,10 +88,10 @@ public class DBHelper extends SQLiteOpenHelper {
         int calidad = 100; // Comenzar con la calidad máxima
         bitmap.compress(Bitmap.CompressFormat.JPEG, calidad, outputStream);
 
-        // Redimensionar la imagen si es necesario (opcional)
-        // Puedes definir un ancho y alto máximos
-        int maxWidth = 800; // Ancho máximo deseado
-        int maxHeight = 800; // Alto máximo deseado
+        // Redimensionar la imagen si es necesario
+        // definir un ancho y alto máximos
+        int maxWidth = 800; // Ancho máximo
+        int maxHeight = 800; // Alto máximo
         if (bitmap.getWidth() > maxWidth || bitmap.getHeight() > maxHeight) {
             bitmap = Bitmap.createScaledBitmap(bitmap, maxWidth, maxHeight, true);
             outputStream.reset(); // Limpiar el buffer

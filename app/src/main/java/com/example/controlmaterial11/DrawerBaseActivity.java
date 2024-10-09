@@ -24,7 +24,7 @@ public class DrawerBaseActivity extends AppCompatActivity implements NavigationV
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Este es el layout base, que se establece más adelante
+        // Este es el layout base
     }
 
     @Override
@@ -71,10 +71,25 @@ public class DrawerBaseActivity extends AppCompatActivity implements NavigationV
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // Maneja la selección de ítems del NavigationView aquí
         drawerLayout.closeDrawer(GravityCompat.START);
-        manejarAccionesNavegacion(item.getItemId());
-        return false;
+        int id = item.getItemId();
+
+        if (id == R.id.cerrar_sesion) {
+            // Limpiar las preferencias del usuario si es necesario
+            SharedPreferences preferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.clear();  // Limpia las preferencias del usuario, si es necesario
+            editor.apply();
+
+            // Cerrar la aplicación completamente
+            finishAffinity();  // Cierra todas las actividades de la pila
+            System.exit(0);    // Fuerza el cierre del proceso (opcional, no siempre necesario)
+
+            return true;
+        }
+
+        manejarAccionesNavegacion(id);
+        return true;
     }
 
     private void manejarAccionesNavegacion(int itemId) {

@@ -23,7 +23,7 @@ import java.util.Calendar;
 
 public class Editar_reporte_Activity extends DrawerBaseActivity {
     ActivityEditarReporteBinding editarReporteBinding;
-    DBHelper dbHelper; // Instancia de DBHelper
+    DBHelper dbHelper;
 
     private static final int REQUEST_IMAGE_BEFORE = 1;
     private static final int REQUEST_IMAGE_AFTER = 2;

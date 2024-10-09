@@ -13,7 +13,7 @@ public class InicioActivity extends DrawerBaseActivity {
     ActivityInicioBinding activityInicioBinding;
     private RecyclerView recyclerView;
     private ReporteAdapter reporteAdapter;
-    private List<Reporte> listaReportes; // Cambiado a List<Reporte>
+    private List<Reporte> listaReportes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,8 +21,15 @@ public class InicioActivity extends DrawerBaseActivity {
         activityInicioBinding = ActivityInicioBinding.inflate(getLayoutInflater());
         setContentView(activityInicioBinding.getRoot());
 
+        // Referenciar SwipeRefreshLayout
+        activityInicioBinding.swipeRefreshLayout.setOnRefreshListener(() -> {
+            cargarDatos(); // Cargar datos nuevamente
+            reporteAdapter.notifyDataSetChanged(); // Notificar al adaptador que los datos han cambiado
+            activityInicioBinding.swipeRefreshLayout.setRefreshing(false); // Detener la animación de refresco
+        });
+
         recyclerView = activityInicioBinding.recyclerViewReportes;
-        listaReportes = new ArrayList<>(); // Inicializa la lista como una lista de Reporte
+        listaReportes = new ArrayList<>();
 
         // Cargar datos desde la base de datos
         cargarDatos();
@@ -37,5 +44,4 @@ public class InicioActivity extends DrawerBaseActivity {
         DBHelper dbHelper = new DBHelper(this);
         listaReportes = dbHelper.obtenerTodosLosReportes(); // Ahora devuelve List<Reporte>
     }
-
 }
