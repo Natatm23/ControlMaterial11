@@ -40,6 +40,9 @@
             android:name=".GenerarreporteActivity"
             android:exported="false" />
         <activity
+            android:name=".Registro_Activity"
+            android:exported="false" />
+        <activity
             android:name=".DrawerBaseActivity"
             android:exported="false" />
 

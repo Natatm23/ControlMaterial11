@@ -49,7 +49,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("PRAGMA foreign_keys=ON;");
 
         String CREATE_LOGIN_TABLE = "CREATE TABLE " + TABLE_LOGIN + "("
-                + COLUMN_ID_USUARIO + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COLUMN_ID_USUARIO + " INTEGER PRIMARY KEY, "
                 + COLUMN_USERNAME + " TEXT, "
                 + COLUMN_PASSWORD + " TEXT)";
         db.execSQL(CREATE_LOGIN_TABLE);
@@ -149,9 +149,10 @@ public class DBHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
-    public boolean insertarUsuario(String username, String password) {
+    public boolean insertarUsuario(String username, String password, String id_usuario) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
+        values.put(COLUMN_ID_USUARIO, id_usuario);
         values.put(COLUMN_USERNAME, username);
         values.put(COLUMN_PASSWORD, password);
 

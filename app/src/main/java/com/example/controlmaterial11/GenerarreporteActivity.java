@@ -222,7 +222,7 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
         values.put("id_usuario", id_usuario);
 
         long newRowId = db.insert("reportes", null, values);
-        db.close();
+        //db.close();
 
         return newRowId != -1; // Retorna true si la inserción fue exitosa
     }

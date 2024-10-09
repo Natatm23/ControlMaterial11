@@ -7,15 +7,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import com.example.controlmaterial11.DBHelper;
-
-
 import androidx.appcompat.app.AppCompatActivity;
 
 public class LoginActivity extends AppCompatActivity {
 
     // Declarar variables
     private EditText txtUsuario, txtClave;
-    private Button btnIngresar;
+    private Button btnIngresar, btnRegistrarme; // Declaración del botón de registrarse
     private DBHelper dbHelper;
 
     public static int idUsuario; // Variable estática para almacenar el ID del usuario
@@ -28,12 +26,13 @@ public class LoginActivity extends AppCompatActivity {
         // Inicializar el DBHelper para interactuar con la base de datos
         dbHelper = new DBHelper(this);
 
-        dbHelper.insertarUsuario("nata", "123"); //usuario de prueba
+        // dbHelper.insertarUsuario("nata", "123"); //usuario de prueba
 
         // Inicializar las vistas
         txtUsuario = findViewById(R.id.txtusuario);
         txtClave = findViewById(R.id.txtclave);
         btnIngresar = findViewById(R.id.btningresar);
+        btnRegistrarme = findViewById(R.id.btnregistrarme); // Inicializar el botón de registrarse
 
         // Configurar la acción del botón de inicio de sesión
         btnIngresar.setOnClickListener(new View.OnClickListener() {
@@ -70,8 +69,17 @@ public class LoginActivity extends AppCompatActivity {
                         // Si las credenciales son incorrectas, mostrar un mensaje de error
                         Toast.makeText(LoginActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
                     }
-
                 }
+            }
+        });
+
+        // Configurar la acción del botón "Registrarme"
+        btnRegistrarme.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Iniciar la actividad de registro
+                Intent intent = new Intent(LoginActivity.this, Registro_Activity.class);
+                startActivity(intent);
             }
         });
     }
