@@ -23,22 +23,22 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String TABLE_LOGIN = "Login";
     private static final String TABLE_REPORTES = "Reportes";
 
-    private static final String COLUMN_ID_USUARIO = "Id_Usuario";
+    public static final String COLUMN_ID_USUARIO = "Id_Usuario";
     private static final String COLUMN_USERNAME = "Usuario";
     private static final String COLUMN_PASSWORD = "Contraseña";
 
-    private static final String COLUMN_ID_TICKET = "Id_ticket";
-    private static final String COLUMN_FECHA_ASIGNACION = "Fecha_asignacion";
-    private static final String COLUMN_FECHA_REPARACION = "Fecha_reparacion";
-    private static final String COLUMN_COLONIA = "Colonia";
-    private static final String COLUMN_TIPO_SUELO = "Tipo_suelo";
-    private static final String COLUMN_DIRECCION = "Direccion";
-    private static final String COLUMN_REPORTANTE = "Reportante";
-    private static final String COLUMN_TELEFONO_REPORTANTE = "Telefono_reportante";
-    private static final String COLUMN_REPARADOR = "Reparador";
-    private static final String COLUMN_MATERIAL = "Material";
-    private static final String COLUMN_IMAGEN_ANTES = "Imagen_antes";
-    private static final String COLUMN_IMAGEN_DESPUES = "Imagen_despues";
+    public static final String COLUMN_ID_TICKET = "Id_ticket";
+    public static final String COLUMN_FECHA_ASIGNACION = "Fecha_asignacion";
+    public static final String COLUMN_FECHA_REPARACION = "Fecha_reparacion";
+    public static final String COLUMN_COLONIA = "Colonia";
+    public static final String COLUMN_TIPO_SUELO = "Tipo_suelo";
+    public static final String COLUMN_DIRECCION = "Direccion";
+    public static final String COLUMN_REPORTANTE = "Reportante";
+    public static final String COLUMN_TELEFONO_REPORTANTE = "Telefono_reportante";
+    public static final String COLUMN_REPARADOR = "Reparador";
+    public static final String COLUMN_MATERIAL = "Material";
+    public static final String COLUMN_IMAGEN_ANTES = "Imagen_antes";
+    public static final String COLUMN_IMAGEN_DESPUES = "Imagen_despues";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -57,8 +57,8 @@ public class DBHelper extends SQLiteOpenHelper {
         String CREATE_REPORTES_TABLE = "CREATE TABLE " + TABLE_REPORTES + "("
                 + COLUMN_ID_TICKET + " INTEGER PRIMARY KEY, "
                 + COLUMN_ID_USUARIO + " INTEGER NOT NULL, "
-                + COLUMN_FECHA_ASIGNACION + " TEXT NOT NULL, "
-                + COLUMN_FECHA_REPARACION + " TEXT NOT NULL, "
+                + COLUMN_FECHA_ASIGNACION + " DATE NOT NULL, "
+                + COLUMN_FECHA_REPARACION + " DATE NOT NULL, "
                 + COLUMN_COLONIA + " TEXT NOT NULL, "
                 + COLUMN_TIPO_SUELO + " TEXT NOT NULL, "
                 + COLUMN_DIRECCION + " TEXT NOT NULL, "
@@ -256,6 +256,13 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         return idUsuario;
     }
+
+    public Cursor obtenerDatosParaSincronizar() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        // Obtener todos los registros de la tabla reportes
+        return db.rawQuery("SELECT * FROM " + TABLE_REPORTES, null);
+    }
+
 
 
     public boolean actualizarReporte(int id_ticket, String colonia, String direccion, String reportante,

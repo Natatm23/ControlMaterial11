@@ -393,7 +393,7 @@
                     android:layout_marginTop="5dp"
                     android:backgroundTint="@color/material_dynamic_primary60"
                     android:minHeight="48dp"
-                    android:text="EDITAR"
+                    android:text="GUARDAR"
                     android:textColor="@color/black"
                     android:textSize="20sp"
                     app:cornerRadius="20dp"

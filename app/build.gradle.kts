@@ -41,8 +41,8 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.swiperefreshlayout)
+    implementation (libs.mssql.jdbc)
 
-    // Dependencias de Glide
     implementation (libs.glide)
     annotationProcessor (libs.compiler)
 
