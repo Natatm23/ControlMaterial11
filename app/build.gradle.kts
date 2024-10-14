@@ -42,7 +42,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.swiperefreshlayout)
     implementation (libs.mssql.jdbc)
-
+    implementation (libs.mssql.jdbc)
     implementation (libs.glide)
     annotationProcessor (libs.compiler)
 
