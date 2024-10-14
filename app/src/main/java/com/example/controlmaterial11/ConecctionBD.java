@@ -5,32 +5,29 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class ConecctionBD {
-
-    private static final String IP = "10.10.1.111";
-    private static final String USER = "NATA";
-    private static final String PASSWORD = "123123";
-    private static final String DATABASE = "JMAS_REPORTES_MATERIAL";
-    // Intenta agregar sslProtocol para controlar SSL
-    private static final String URL = "jdbc:sqlserver://" + IP + ";databaseName=" + DATABASE + ";encrypt=false;trustServerCertificate=true;sslProtocol=TLSv1.2";
-    private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    private static final String TAG = "ConnectionBD";
+    private static final String IP = "10.10.1.111"; // IP de la base de datos
+    private static final String USER = "NATA"; // Usuario de la base de datos
+    private static final String PASSWORD = "123123"; // Contraseña de la base de datos
+    private static final String DATABASE = "JMAS_REPORTES_MATERIAL"; // Nombre de la base de datos
+    private static final String DRIVER_CLASS = "net.sourceforge.jtds.jdbc.Driver"; // Controlador JDBC
+    private static final String TAG = "ConnectionBD"; // Etiqueta para logs
 
     // Método para obtener la conexión
     public static Connection getConnection() {
         Connection connection = null;
         try {
-            // Cargar el controlador JDBC
+            // Cargar el controlador
             Class.forName(DRIVER_CLASS);
-            connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("Conexión exitosa a la base de datos");
+            // Construir la cadena de conexión
+            String connectionString = "jdbc:jtds:sqlserver://" + IP + ";databaseName=" + DATABASE + ";user=" + USER + ";password=" + PASSWORD + ";";
+            // Establecer la conexión
+            connection = DriverManager.getConnection(connectionString);
+            System.out.println("Conexión establecida con éxito");
         } catch (ClassNotFoundException e) {
-            System.out.println("Error: Driver JDBC no encontrado");
+            System.err.println("Error: Controlador no encontrado. Asegúrate de que jTDS esté incluido en tus dependencias.");
             e.printStackTrace();
         } catch (SQLException e) {
-            System.out.println("Error: No se pudo conectar a la base de datos. Detalles:");
-            System.out.println("Estado SQL: " + e.getSQLState());
-            System.out.println("Código de error: " + e.getErrorCode());
-            System.out.println("Mensaje: " + e.getMessage());
+            System.err.println("Error: No se pudo establecer la conexión con la base de datos");
             e.printStackTrace();
         }
         return connection;
@@ -43,8 +40,8 @@ public class ConecctionBD {
                 connection.close();
                 System.out.println("Conexión cerrada");
             } catch (SQLException e) {
+                System.err.println("Error: No se pudo cerrar la conexión");
                 e.printStackTrace();
-                System.out.println("Error: No se pudo cerrar la conexión");
             }
         }
     }

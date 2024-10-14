@@ -233,6 +233,52 @@ public class DBHelper extends SQLiteOpenHelper {
         return reportes;
     }
 
+    public List<Reporte_sincronizar> obtenerTodosLosReportesParaSincronizar() {
+        List<Reporte_sincronizar> reportes = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT Id_ticket, Fecha_asignacion, Fecha_reparacion, Colonia, Tipo_suelo, Direccion, " +
+                "Reportante, Telefono_reportante, Reparador, Material, Imagen_antes, Imagen_despues " +
+                "FROM " + TABLE_REPORTES;
+
+        Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                try {
+                    String idTicket = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ID_TICKET));
+                    String fechaAsignacion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FECHA_ASIGNACION));
+                    String fechaReparacion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FECHA_REPARACION));
+                    String colonia = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COLONIA));
+                    String tipoSuelo = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIPO_SUELO));
+                    String direccion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DIRECCION));
+                    String reportante = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_REPORTANTE));
+                    String telefonoReportante = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TELEFONO_REPORTANTE));
+                    String reparador = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_REPARADOR));
+                    String material = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MATERIAL));
+
+                    byte[] imagenAntes = cursor.getBlob(cursor.getColumnIndexOrThrow(COLUMN_IMAGEN_ANTES));
+                    byte[] imagenDespues = cursor.getBlob(cursor.getColumnIndexOrThrow(COLUMN_IMAGEN_DESPUES));
+
+                    // Cambiamos a Reporte_sincronizar
+                    Reporte_sincronizar reporte = new Reporte_sincronizar(
+                            idTicket, fechaAsignacion, fechaReparacion, colonia, tipoSuelo,
+                            direccion, reportante, telefonoReportante, reparador,
+                            material, imagenAntes, imagenDespues
+                    );
+                    reportes.add(reporte);
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();  // Esto te permitirá ver si alguna columna no existe
+                }
+            } while (cursor.moveToNext());
+        }
+        cursor.close(); // Cerrar cursor
+
+        return reportes;
+    }
+
+
+
     public int obtenerIdUsuario(String username) {
         SQLiteDatabase db = this.getReadableDatabase();
         int idUsuario = -1; // Valor predeterminado en caso de que no se encuentre el usuario

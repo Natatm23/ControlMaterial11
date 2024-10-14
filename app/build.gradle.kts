@@ -30,7 +30,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    buildFeatures{
+    buildFeatures {
         viewBinding = true
     }
 }
@@ -41,10 +41,9 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.swiperefreshlayout)
-    implementation (libs.mssql.jdbc)
-    implementation (libs.mssql.jdbc)
-    implementation (libs.glide)
-    annotationProcessor (libs.compiler)
+    implementation(files("libs/jtds-1.3.1.jar"))
+    implementation(libs.glide)
+    annotationProcessor(libs.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
