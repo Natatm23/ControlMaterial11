@@ -81,38 +81,57 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     private byte[] reducirImagen(Uri imageUri, Context context) throws IOException {
-        Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), imageUri);
+        // Obtener el tamaño original de la imagen
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true; // No carga la imagen en memoria
+        BitmapFactory.decodeStream(context.getContentResolver().openInputStream(imageUri), null, options);
+
+        // Calcular el tamaño necesario para redimensionar
+        final int REQUIRED_WIDTH = 800;
+        final int REQUIRED_HEIGHT = 800;
+        int inSampleSize = 1;
+
+        // Determinar si es necesario redimensionar la imagen
+        if (options.outHeight > REQUIRED_HEIGHT || options.outWidth > REQUIRED_WIDTH) {
+            final int halfHeight = options.outHeight / 2;
+            final int halfWidth = options.outWidth / 2;
+
+            // Calcular el tamaño de muestra
+            while ((halfHeight / inSampleSize) >= REQUIRED_HEIGHT && (halfWidth / inSampleSize) >= REQUIRED_WIDTH) {
+                inSampleSize *= 2;
+            }
+        }
+
+        // Cargar la imagen con el tamaño calculado
+        options.inSampleSize = inSampleSize;
+        options.inJustDecodeBounds = false; // Ahora carga la imagen
+        Bitmap bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(imageUri), null, options);
+
+        // Comprimir la imagen y asegurarte de que su tamaño no supere el límite
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        int calidadCompresion = 75; // Puedes ajustar la calidad según tus necesidades
 
-        // Reduce la calidad de la imagen en decrementos de 10% hasta que se alcance la calidad mínima
-        int calidad = 100; // Comenzar con la calidad máxima
-        bitmap.compress(Bitmap.CompressFormat.JPEG, calidad, outputStream);
+        // Realizar la compresión
+        bitmap.compress(Bitmap.CompressFormat.JPEG, calidadCompresion, outputStream);
 
-        // Redimensionar la imagen si es necesario
-        // definir un ancho y alto máximos
-        int maxWidth = 800; // Ancho máximo
-        int maxHeight = 800; // Alto máximo
-        if (bitmap.getWidth() > maxWidth || bitmap.getHeight() > maxHeight) {
-            bitmap = Bitmap.createScaledBitmap(bitmap, maxWidth, maxHeight, true);
-            outputStream.reset(); // Limpiar el buffer
-            bitmap.compress(Bitmap.CompressFormat.JPEG, calidad, outputStream);
-        }
-
-        // Si la imagen aún es demasiado grande, seguir reduciendo calidad
-        while (outputStream.size() > 0 && calidad > 0) {
-            outputStream.reset(); // Limpiar el buffer
-            calidad -= 10; // Reducir calidad en incrementos de 10
-            bitmap.compress(Bitmap.CompressFormat.JPEG, calidad, outputStream);
-        }
-
-        // Convertir a byte array y liberar memoria
+        // Comprobar el tamaño del byte array resultante y reducir la calidad si es necesario
         byte[] imagenReducida = outputStream.toByteArray();
+
+        while (imagenReducida.length > 1024 * 1024) { // Establece un límite de 1MB
+            outputStream.reset(); // Reiniciar el OutputStream
+            calidadCompresion -= 5; // Reducir la calidad
+            if (calidadCompresion < 0) {
+                break; // Si la calidad es menor que 0, romper el ciclo
+            }
+            bitmap.compress(Bitmap.CompressFormat.JPEG, calidadCompresion, outputStream);
+            imagenReducida = outputStream.toByteArray(); // Obtener el nuevo byte array
+        }
+
         bitmap.recycle(); // Liberar recursos
         outputStream.close(); // Cerrar el OutputStream
 
         return imagenReducida;
     }
-
 
     public boolean insertarReporte(int id_usuario, String fecha_asignacion, String fecha_reparacion, String colonia,
                                    String tipo_suelo, String direccion, String reportante, String telefono_reportante,

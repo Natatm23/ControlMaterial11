@@ -163,28 +163,21 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
     }
 
     private byte[] reducirImagen(Uri imageUri, Context context) throws IOException {
+        // Obtener el bitmap original
         Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), imageUri);
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
 
-        // Comprobar si el tamaño de la imagen es mayor a 10 MB
-        if (bitmap.getAllocationByteCount() > 10 * 1024 * 1024) {
-            // Reducir la imagen
-            int newWidth = width / 2; // Reducir a la mitad
-            int newHeight = height / 2;
-            Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, false);
+        // Escalar el bitmap a un tamaño más pequeño
+        int nuevoAncho = 900; // Cambia a un tamaño deseado
+        int nuevoAlto = 900; // Cambia a un tamaño deseado
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, nuevoAncho, nuevoAlto, false);
 
-            // Convertir la imagen a byte array
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-            return stream.toByteArray();
-        }
-
-        // Si el tamaño es adecuado, convertir la imagen a byte array directamente
+        // Convertir la imagen a byte array
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        // Comprimir a un 50% de calidad para reducir aún más el tamaño
+        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream);
         return stream.toByteArray();
     }
+
 
     private boolean insertarReporte(String ticket, String fechaAsignacion, String fechaReparacion,
                                     String colonia, String direccionText, String tipoSuelo,
