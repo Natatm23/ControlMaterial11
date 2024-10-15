@@ -33,6 +33,7 @@ public class ConecctionBD {
         return connection;
     }
 
+
     // Método para cerrar la conexión
     public static void closeConnection(Connection connection) {
         if (connection != null) {

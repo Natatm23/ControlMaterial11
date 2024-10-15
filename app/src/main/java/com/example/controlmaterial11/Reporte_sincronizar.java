@@ -1,5 +1,9 @@
 package com.example.controlmaterial11;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Reporte_sincronizar {
     private String idTicket;
     private String fechaAsignacion;
@@ -11,12 +15,12 @@ public class Reporte_sincronizar {
     private String telefonoReportante;
     private String reparador;
     private String material;
-    private byte[] imagenAntes;  // Cambiado a byte[]
-    private byte[] imagenDespues; // Cambiado a byte[]
+    private byte[] imagenAntes;
+    private byte[] imagenDespues;
 
     public Reporte_sincronizar(String idTicket, String fechaAsignacion, String fechaReparacion, String colonia,
-                   String tipoSuelo, String direccion, String reportante, String telefonoReportante,
-                   String reparador, String material, byte[] imagenAntes, byte[] imagenDespues) {
+                               String tipoSuelo, String direccion, String reportante, String telefonoReportante,
+                               String reparador, String material, byte[] imagenAntes, byte[] imagenDespues) {
         this.idTicket = idTicket;
         this.fechaAsignacion = fechaAsignacion;
         this.fechaReparacion = fechaReparacion;
@@ -27,8 +31,8 @@ public class Reporte_sincronizar {
         this.telefonoReportante = telefonoReportante;
         this.reparador = reparador;
         this.material = material;
-        this.imagenAntes = imagenAntes; // Inicializa imagenAntes
-        this.imagenDespues = imagenDespues; // Inicializa imagenDespues
+        this.imagenAntes = imagenAntes;
+        this.imagenDespues = imagenDespues;
     }
 
     public String getIdTicket() {
@@ -71,12 +75,37 @@ public class Reporte_sincronizar {
         return material;
     }
 
-    public byte[] getImagenAntes() { // Getter para imagenAntes
+    public byte[] getImagenAntes() {
         return imagenAntes;
     }
 
-    public byte[] getImagenDespues() { // Getter para imagenDespues
+    public byte[] getImagenDespues() {
         return imagenDespues;
     }
-}
 
+    // Método para convertir la fecha de asignación a java.util.Date
+    public Date getFechaAsignacionDate() {
+        return parseFecha(fechaAsignacion);
+    }
+
+    // Método para convertir la fecha de reparación a java.util.Date
+    public Date getFechaReparacionDate() {
+        return parseFecha(fechaReparacion);
+    }
+
+    private Date parseFecha(String fechaStr) {
+        if (fechaStr == null || fechaStr.isEmpty()) {
+            return null; // Retorna null si la cadena de fecha es nula o vacía
+        }
+
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy"); // Ajustar formato al esperado
+        try {
+            return formatoFecha.parse(fechaStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null; // Manejo de errores
+        }
+    }
+
+
+}

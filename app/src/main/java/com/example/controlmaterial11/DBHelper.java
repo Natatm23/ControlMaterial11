@@ -309,6 +309,12 @@ public class DBHelper extends SQLiteOpenHelper {
         return db.rawQuery("SELECT * FROM " + TABLE_REPORTES, null);
     }
 
+    // Método para borrar todos los reportes de SQLite
+    public void borrarTodosLosReportes() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("reportes", null, null);
+        db.close();
+    }
 
 
     public boolean actualizarReporte(int id_ticket, String colonia, String direccion, String reportante,
