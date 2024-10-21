@@ -49,6 +49,13 @@
                     android:textSize="34dp"
                     android:textStyle="bold" />
 
+                <Spinner
+                    android:id="@+id/spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp" />
+
+
                 <EditText
                     android:id="@+id/txtusuario"
                     android:layout_width="match_parent"
