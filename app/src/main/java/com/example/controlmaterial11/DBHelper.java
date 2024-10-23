@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -18,10 +19,11 @@ import java.util.List;
 public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "Reportes_material.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     private static final String TABLE_LOGIN = "Login";
     private static final String TABLE_REPORTES = "Reportes";
+    private static final String TABLE_DEPARTAMENTOS = "Departamentos";
 
     public static final String COLUMN_ID_USUARIO = "Id_Usuario";
     private static final String COLUMN_USERNAME = "Usuario";
@@ -39,6 +41,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_MATERIAL = "Material";
     public static final String COLUMN_IMAGEN_ANTES = "Imagen_antes";
     public static final String COLUMN_IMAGEN_DESPUES = "Imagen_despues";
+
+    public static final  String COLUMN_ID_DEPARTAMENTO = "Id_Departamento";
+    public  static final String COLUMN_NOMBRE_DEPARTAMENTO = "Nombre_Departamento";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -71,12 +76,26 @@ public class DBHelper extends SQLiteOpenHelper {
                 + "FOREIGN KEY (" + COLUMN_ID_USUARIO + ") REFERENCES " + TABLE_LOGIN + "(" + COLUMN_ID_USUARIO + ")"
                 + " ON DELETE CASCADE ON UPDATE CASCADE)";
         db.execSQL(CREATE_REPORTES_TABLE);
+
+        String CREATE_DEPARTAMENTOS_TABLE = "CREATE TABLE " + TABLE_DEPARTAMENTOS + " ("
+                + COLUMN_ID_DEPARTAMENTO + " INTEGER PRIMARY KEY, "
+                + COLUMN_NOMBRE_DEPARTAMENTO + " TEXT NOT NULL)";
+
+        db.execSQL(CREATE_DEPARTAMENTOS_TABLE);
+
+        String insertDepartamentos = "INSERT INTO " + TABLE_DEPARTAMENTOS + " (" + COLUMN_ID_DEPARTAMENTO + ", " + COLUMN_NOMBRE_DEPARTAMENTO + ") " +
+                "VALUES (1 , 'CORTES'), " +
+                "(2 , 'FUGAS'), " +
+                "(3, 'RECONEXIONES'), " +
+                "(4, 'PADRON DE USUARIOS')";
+        db.execSQL(insertDepartamentos);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_LOGIN);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_REPORTES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_DEPARTAMENTOS);
         onCreate(db);
     }
 
@@ -358,5 +377,61 @@ public class DBHelper extends SQLiteOpenHelper {
         db.close(); //cerrar curor <---
         return rowsAffected > 0;  // Retorna true si se actualizaron filas
     }
+
+    public void insertarDepartamentos(SQLiteDatabase db) {
+        db.beginTransaction();  // Inicia la transacción
+
+        try {
+            // Consulta SQL para insertar los departamentos
+            String sql = "INSERT INTO Departamentos (Id_Departamento, Nombre_Departamento) VALUES (?, ?)";
+            SQLiteStatement statement = db.compileStatement(sql);
+
+            // Insertar el primer departamento
+            statement.clearBindings();
+            statement.bindLong(1, 5221);  // Id_Departamento
+            statement.bindString(2, "REZAGO");  // Nombre_Departamento
+            statement.execute();
+
+            // Insertar el segundo departamento
+            statement.clearBindings();
+            statement.bindLong(1, 5241);
+            statement.bindString(2, "PADRON DE USUARIOS");
+            statement.execute();
+
+            // Insertar el tercer departamento
+            statement.clearBindings();
+            statement.bindLong(1, 5401);
+            statement.bindString(2, "SANEAMIENTO");
+            statement.execute();
+
+            // Confirmar la transacción
+            db.setTransactionSuccessful();
+
+            System.out.println("Departamentos insertados exitosamente.");
+        } catch (Exception e) {
+            e.printStackTrace();  // Manejo de errores
+        } finally {
+            db.endTransaction();  // Termina la transacción, sea exitosa o no
+        }
+    }
+    public List<String> getDepartamentos() {
+        List<String> departamentos = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT " + COLUMN_NOMBRE_DEPARTAMENTO + " FROM " + TABLE_DEPARTAMENTOS;
+        Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                String nombreDepartamento = cursor.getString(0);
+                departamentos.add(nombreDepartamento);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        return departamentos;
+    }
+
 }
 

@@ -3,17 +3,21 @@ package com.example.controlmaterial11;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
-import com.example.controlmaterial11.DBHelper;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {
 
     // Declarar variables
     private EditText txtUsuario, txtClave;
     private Button btnIngresar, btnRegistrarme; // Declaración del botón de registrarse
+    private Spinner spinnerDepartamentos; // Spinner para mostrar los departamentos
     private DBHelper dbHelper;
 
     public static int idUsuario; // Variable estática para almacenar el ID del usuario
@@ -26,13 +30,25 @@ public class LoginActivity extends AppCompatActivity {
         // Inicializar el DBHelper para interactuar con la base de datos
         dbHelper = new DBHelper(this);
 
-        // dbHelper.insertarUsuario("nata", "123"); //usuario de prueba
-
         // Inicializar las vistas
         txtUsuario = findViewById(R.id.txtusuario);
         txtClave = findViewById(R.id.txtclave);
         btnIngresar = findViewById(R.id.btningresar);
         btnRegistrarme = findViewById(R.id.btnregistrarme); // Inicializar el botón de registrarse
+        spinnerDepartamentos = findViewById(R.id.spinner); // Inicializar el spinner
+
+        // Obtener los departamentos de la base de datos
+        List<String> departamentos = dbHelper.getDepartamentos();
+
+        // Crear un adaptador para el spinner usando el diseño personalizado
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                R.layout.spinner_item, // Usar el archivo de diseño del spinner
+                departamentos
+        );
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerDepartamentos.setAdapter(adapter);
 
         // Configurar la acción del botón de inicio de sesión
         btnIngresar.setOnClickListener(new View.OnClickListener() {
