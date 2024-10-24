@@ -38,8 +38,23 @@
                     android:textSize="34dp"
                     android:textStyle="bold" />
 
+                <TextView
+                    android:id="@+id/hintTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TIPO DE SERVICIO:"
+                    android:textColor="@color/black"
+                    android:visibility="visible"/>
 
-
+                <Spinner
+                    android:id="@+id/spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:background="@drawable/custom_edittext"
+                    android:popupBackground="@color/blue"
+                    android:spinnerMode="dropdown"
+                    android:textColor="@color/black"/>
 
                 <EditText
                     android:id="@+id/txt_ticket"
@@ -193,7 +208,7 @@
                     android:drawableLeft="@drawable/herrmienta"
                     android:drawablePadding="8dp"
                     android:padding="8dp"
-                    android:hint="MATERIAL"
+                    android:hint="MATERIAL / DESCRIPCION"
                     android:inputType="textMultiLine|textCapCharacters"
                     android:textColor="@color/black"
                     android:textColorHint="@color/cardview_dark_background"

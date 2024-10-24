@@ -6,6 +6,7 @@ import java.util.Date;
 
 public class Reporte_sincronizar {
     private String idTicket;
+    private String Departamento;
     private String fechaAsignacion;
     private String fechaReparacion;
     private String colonia;
@@ -18,10 +19,11 @@ public class Reporte_sincronizar {
     private byte[] imagenAntes;
     private byte[] imagenDespues;
 
-    public Reporte_sincronizar(String idTicket, String fechaAsignacion, String fechaReparacion, String colonia,
+    public Reporte_sincronizar(String idTicket,String Departamento, String fechaAsignacion, String fechaReparacion, String colonia,
                                String tipoSuelo, String direccion, String reportante, String telefonoReportante,
                                String reparador, String material, byte[] imagenAntes, byte[] imagenDespues) {
         this.idTicket = idTicket;
+        this.Departamento = Departamento;
         this.fechaAsignacion = fechaAsignacion;
         this.fechaReparacion = fechaReparacion;
         this.colonia = colonia;
@@ -37,6 +39,10 @@ public class Reporte_sincronizar {
 
     public String getIdTicket() {
         return idTicket;
+    }
+
+    public String getDepartamento() {
+        return Departamento;
     }
 
     public String getFechaAsignacion() {

@@ -34,7 +34,7 @@ public class SincronizarActivity extends DrawerBaseActivity {
         setContentView(sincronizarBinding.getRoot());
 
         // Inicializa el ProgressBar
-        progressBar = sincronizarBinding.progressBar; // Asegúrate de tener un ProgressBar en tu XML
+        progressBar = sincronizarBinding.progressBar;
 
         // SwipeRefreshLayout para recargar los datos
         sincronizarBinding.swipeRefreshLayout.setOnRefreshListener(() -> {
@@ -135,37 +135,37 @@ public class SincronizarActivity extends DrawerBaseActivity {
                         throw new IllegalArgumentException("La fecha de reparación no puede ser nula para el ticket: " + reporte.getIdTicket());
                     }
 
-                    String query = "INSERT INTO Reportes (Id_ticket, Fecha_asignacion, Fecha_reparacion, " +
+                    String query = "INSERT INTO Reportes (Id_ticket, Departamento, Fecha_asignacion, Fecha_reparacion, " +
                             "Colonia, Tipo_suelo, Direccion, Reportante, Telefono_reportante, " +
                             "Reparador, Material, Imagen_antes, Imagen_despues, id_usuario) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                        preparedStatement.setString(1, idTicket);
-                        preparedStatement.setDate(2, new java.sql.Date(fechaAsignacion.getTime()));
-                        preparedStatement.setDate(3, new java.sql.Date(fechaReparacion.getTime()));
-                        preparedStatement.setString(4, reporte.getColonia());
-                        preparedStatement.setString(5, reporte.getTipoSuelo());
-                        preparedStatement.setString(6, reporte.getDireccion());
-                        preparedStatement.setString(7, reporte.getReportante());
-                        preparedStatement.setString(8, reporte.getTelefonoReportante());
-                        preparedStatement.setString(9, reporte.getReparador());
-                        preparedStatement.setString(10, reporte.getMaterial());
-                        preparedStatement.setBytes(11, reporte.getImagenAntes());
-                        preparedStatement.setBytes(12, reporte.getImagenDespues());
-
-                        // Incluir el ID del usuario logueado
-                        preparedStatement.setInt(13, LoginActivity.idUsuario);
+                        preparedStatement.setString(1, idTicket);                                // 1. Id_ticket
+                        preparedStatement.setString(2, reporte.getDepartamento());                // 2. Departamento
+                        preparedStatement.setDate(3, new java.sql.Date(fechaAsignacion.getTime())); // 3. Fecha_asignacion
+                        preparedStatement.setDate(4, new java.sql.Date(fechaReparacion.getTime())); // 4. Fecha_reparacion
+                        preparedStatement.setString(5, reporte.getColonia());                    // 5. Colonia
+                        preparedStatement.setString(6, reporte.getTipoSuelo());                  // 6. Tipo_suelo
+                        preparedStatement.setString(7, reporte.getDireccion());                  // 7. Direccion
+                        preparedStatement.setString(8, reporte.getReportante());                 // 8. Reportante
+                        preparedStatement.setString(9, reporte.getTelefonoReportante());         // 9. Telefono_reportante
+                        preparedStatement.setString(10, reporte.getReparador());                 // 10. Reparador
+                        preparedStatement.setString(11, reporte.getMaterial());                  // 11. Material
+                        preparedStatement.setBytes(12, reporte.getImagenAntes());                // 12. Imagen_antes
+                        preparedStatement.setBytes(13, reporte.getImagenDespues());              // 13. Imagen_despues
+                        preparedStatement.setInt(14, LoginActivity.idUsuario);                   // 14. id_usuario
 
                         preparedStatement.executeUpdate();
                     } catch (SQLException e) {
-                        Log.e("Sincronizar", "Error al insertar el reporte: " + e.getMessage());
+                        Log.e("Sincronizar", "Error al insertar el reporte sql: " + e.getMessage());
                         e.printStackTrace();
 
-                        // Mostrar Toast con el error
                         runOnUiThread(() -> Toast.makeText(SincronizarActivity.this, "Error al insertar el reporte: " + e.getMessage(), Toast.LENGTH_LONG).show());
                         return false; // Hubo un error al insertar
                     }
+
+
                 }
 
                 // Si hay IDs duplicados, mostrar un mensaje y no continuar

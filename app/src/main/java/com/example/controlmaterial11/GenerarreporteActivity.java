@@ -4,22 +4,29 @@ import android.app.DatePickerDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
+import android.content.Context;
+
 
 import com.example.controlmaterial11.databinding.ActivityGenerarreporteBinding;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.List;
 
 public class GenerarreporteActivity extends DrawerBaseActivity {
     ActivityGenerarreporteBinding generarreporteBinding;
@@ -29,14 +36,19 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
 
     private EditText txt_ticket, txt_fecha_asignacion, txt_fecha_reparacion, txt_colonia,
             txt_direccion, txt_tipo_suelo, txt_reportante, txt_tel_reportante, txt_reparador, txt_material;
+    private Spinner spinnerDepartamento;
     private ImageView imageViewEvidencia_antes, imageViewEvidencia_despues;
     private Button btn_seleccionar_imagen_antes, btn_seleccionar_imagen_despues, btn_generar_reporte;
+    private DBHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         generarreporteBinding = ActivityGenerarreporteBinding.inflate(getLayoutInflater());
         setContentView(generarreporteBinding.getRoot());
+
+        // Inicializar el DBHelper para interactuar con la base de datos
+        dbHelper = new DBHelper(this);
 
         // Inicializar campos
         txt_ticket = findViewById(R.id.txt_ticket);
@@ -54,6 +66,20 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
         btn_seleccionar_imagen_antes = findViewById(R.id.btn_seleccionar_imagen_antes);
         btn_seleccionar_imagen_despues = findViewById(R.id.btn_seleccionar_imagen_despues);
         btn_generar_reporte = findViewById(R.id.btn_generar_reporte);
+        spinnerDepartamento = findViewById(R.id.spinner);
+
+        // Obtener los departamentos de la base de datos
+        List<String> departamentos = dbHelper.getDepartamentos();
+
+        // Crear un adaptador para el spinner usando el diseño personalizado
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                R.layout.spinner_item, // Usar el archivo de diseño del spinner
+                departamentos
+        );
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerDepartamento.setAdapter(adapter);
 
         // Configurar DatePickers
         setupDatePicker(txt_fecha_asignacion);
@@ -121,6 +147,7 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
         String telReportante = txt_tel_reportante.getText().toString();
         String reparador = txt_reparador.getText().toString();
         String material = txt_material.getText().toString();
+        String departamentoSeleccionado = spinnerDepartamento.getSelectedItem().toString(); // Obtener el departamento seleccionado
 
         if (ticket.isEmpty() || fechaAsignacion.isEmpty() || fechaReparacion.isEmpty() ||
                 colonia.isEmpty() || direccionText.isEmpty() || tipoSuelo.isEmpty() ||
@@ -146,9 +173,10 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
             }
 
             // Llamar al método para insertar el reporte
-            boolean result = insertarReporte(ticket, fechaAsignacion, fechaReparacion, colonia,
+            boolean result = insertarReporte(this, ticket, fechaAsignacion, fechaReparacion, colonia,
                     direccionText, tipoSuelo, reportante, telReportante, reparador, material,
-                    imagenAntesBytes, imagenDespuesBytes);
+                    departamentoSeleccionado, imagenAntesBytes, imagenDespuesBytes);
+
 
             if (result) {
                 Toast.makeText(this, "Reporte generado exitosamente", Toast.LENGTH_SHORT).show();
@@ -178,46 +206,40 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
         return stream.toByteArray();
     }
 
-
-    private boolean insertarReporte(String ticket, String fechaAsignacion, String fechaReparacion,
-                                    String colonia, String direccionText, String tipoSuelo,
-                                    String reportante, String telReportante, String reparador,
-                                    String material, byte[] imagenAntesBytes, byte[] imagenDespuesBytes) {
-        DBHelper dbHelper = new DBHelper(this);
+    private boolean insertarReporte(Context context, String id_ticket, String fecha_asignacion, String fecha_reparacion,
+                                    String colonia, String direccion, String tipo_suelo, String reportante,
+                                    String telefono_reportante, String reparador, String material,
+                                    String departamento, byte[] imagen_antes, byte[] imagen_despues) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        int id_usuario = LoginActivity.idUsuario;
 
-        // Verificar si el Id_ticket ya existe
-        String query = "SELECT COUNT(*) FROM reportes WHERE Id_ticket = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{ticket});
-        cursor.moveToFirst();
-        int count = cursor.getInt(0);
-        cursor.close();
+        // Obtener el id_usuario de SharedPreferences
+        SharedPreferences sharedPreferences = context.getSharedPreferences("nombre_prefs", Context.MODE_PRIVATE);
+        int idUsuario = sharedPreferences.getInt("Id_Usuario", -1); // -1 si no se encuentra
 
-        if (count > 0) {
-            Toast.makeText(this, "El ticket ya existe en la base de datos", Toast.LENGTH_SHORT).show();
-            return false;
+        if (idUsuario == -1) {
+            Log.e("InsertarReporte", "Id_Usuario no encontrado. Asegúrate de que el usuario haya iniciado sesión.");
+            return false; // Salir del método si no hay un Id_Usuario válido
         }
 
         ContentValues values = new ContentValues();
-        values.put("Id_ticket", ticket);
-        values.put("Fecha_asignacion", fechaAsignacion);
-        values.put("Fecha_reparacion", fechaReparacion);
-        values.put("Colonia", colonia);
-        values.put("Direccion", direccionText);
-        values.put("Tipo_suelo", tipoSuelo);
-        values.put("Reportante", reportante);
-        values.put("Telefono_reportante", telReportante);
-        values.put("Reparador", reparador);
-        values.put("Material", material);
-        values.put("Imagen_antes", imagenAntesBytes);
-        values.put("Imagen_despues", imagenDespuesBytes);
-        values.put("id_usuario", id_usuario);
+        values.put("id_ticket", id_ticket);
+        values.put("fecha_asignacion", fecha_asignacion);
+        values.put("fecha_reparacion", fecha_reparacion);
+        values.put("colonia", colonia);
+        values.put("direccion", direccion);
+        values.put("tipo_suelo", tipo_suelo);
+        values.put("reportante", reportante);
+        values.put("telefono_reportante", telefono_reportante);
+        values.put("reparador", reparador);
+        values.put("material", material);
+        values.put("departamento", departamento); // Asegúrate de que el nombre coincida con la columna en tu tabla
+        values.put("imagen_antes", imagen_antes);
+        values.put("imagen_despues", imagen_despues);
+        values.put("id_usuario", idUsuario); // Agregar el id_usuario a los valores
 
-        long newRowId = db.insert("reportes", null, values);
-        //db.close();
-
-        return newRowId != -1; // Retorna true si la inserción fue exitosa
+        long id = db.insert("reportes", null, values);
+        db.close();
+        return id != -1; // Devuelve true si la inserción fue exitosa
     }
 
     private void limpiarCampos() {
@@ -233,7 +255,6 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
         txt_material.setText("");
         imageViewEvidencia_antes.setImageResource(0);
         imageViewEvidencia_despues.setImageResource(0);
-        imageUriAntes = null;
-        imageUriDespues = null;
+        spinnerDepartamento.setSelection(0); // Restablecer el spinner
     }
 }

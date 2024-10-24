@@ -9,7 +9,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -20,6 +22,7 @@ import com.example.controlmaterial11.databinding.ActivityEditarReporteBinding;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.List;
 
 public class Editar_reporte_Activity extends DrawerBaseActivity {
     ActivityEditarReporteBinding editarReporteBinding;
@@ -31,6 +34,8 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
     private Uri imageUriAntes = null;
     private Uri imageUriDespues = null;
     private int id_ticketActual = -1;  // Variable para almacenar el ID del reporte actual
+    private Spinner spinnerDepartamento;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +87,21 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
                 guardarCambiosReporte();
             }
         });
+
+        spinnerDepartamento = findViewById(R.id.spinner);
+
+        // Obtener los departamentos de la base de datos
+        List<String> departamentos = dbHelper.getDepartamentos();
+
+        // Crear un adaptador para el spinner usando el diseño personalizado
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                R.layout.spinner_item, // Usar el archivo de diseño del spinner
+                departamentos
+        );
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerDepartamento.setAdapter(adapter);
     }
 
     private void buscarYMostrarReporte(int id_ticket) {
@@ -101,6 +121,7 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
             String telefonoReportante = cursor.getString(cursor.getColumnIndexOrThrow("Telefono_reportante"));
             String reparador = cursor.getString(cursor.getColumnIndexOrThrow("Reparador"));
             String material = cursor.getString(cursor.getColumnIndexOrThrow("Material"));
+            String departamento = cursor.getString(cursor.getColumnIndexOrThrow("Departamento"));  // Asegúrate de tener esta columna
 
             byte[] imagenAntesBlob = cursor.getBlob(cursor.getColumnIndexOrThrow("Imagen_antes"));
             byte[] imagenDespuesBlob = cursor.getBlob(cursor.getColumnIndexOrThrow("Imagen_despues"));
@@ -131,7 +152,14 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
                 editarReporteBinding.imageViewEvidenciaDespues.setImageResource(R.drawable.info);
             }
 
-            // Cierra el cursor después de usarlo
+            // Seleccionar el valor correcto en el Spinner de departamentos
+            if (departamento != null) {
+                int position = ((ArrayAdapter<String>) spinnerDepartamento.getAdapter()).getPosition(departamento);
+                if (position >= 0) {
+                    spinnerDepartamento.setSelection(position);
+                }
+            }
+
             cursor.close();
         } else {
             Toast.makeText(this, "Reporte no encontrado", Toast.LENGTH_SHORT).show();
@@ -142,6 +170,7 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
             }
         }
     }
+
 
     private void setupDatePicker(EditText editText) {
         editText.setOnClickListener(v -> {
@@ -191,6 +220,7 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
         String fechaAsignacion = editarReporteBinding.txtFechaAsignacion.getText().toString().trim();
         String fechaReparacion = editarReporteBinding.txtFechaReparacion.getText().toString().trim();
 
+        String Departamento = editarReporteBinding.spinner.getSelectedItem().toString().trim();
         String colonia = editarReporteBinding.txtColonia.getText().toString().trim();
         String direccion = editarReporteBinding.direccion.getText().toString().trim();
         String tipoSuelo = editarReporteBinding.txtTipoSuelo.getText().toString().trim();
@@ -223,7 +253,7 @@ public class Editar_reporte_Activity extends DrawerBaseActivity {
             }
         }
 
-        boolean success = dbHelper.actualizarReporte(id_ticketActual, colonia, direccion, reportante,
+        boolean success = dbHelper.actualizarReporte(id_ticketActual,Departamento,colonia, direccion, reportante,
                 telefonoReportante, tipoSuelo, reparador, material, fechaAsignacion, fechaReparacion,
                 imagenAntesBytes, imagenDespuesBytes);
 

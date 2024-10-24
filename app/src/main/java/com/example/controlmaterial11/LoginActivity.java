@@ -1,23 +1,20 @@
 package com.example.controlmaterial11;
 
+import android.content.SharedPreferences;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
+import com.example.controlmaterial11.DBHelper;
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {
 
     // Declarar variables
     private EditText txtUsuario, txtClave;
     private Button btnIngresar, btnRegistrarme; // Declaración del botón de registrarse
-    private Spinner spinnerDepartamentos; // Spinner para mostrar los departamentos
     private DBHelper dbHelper;
 
     public static int idUsuario; // Variable estática para almacenar el ID del usuario
@@ -35,20 +32,6 @@ public class LoginActivity extends AppCompatActivity {
         txtClave = findViewById(R.id.txtclave);
         btnIngresar = findViewById(R.id.btningresar);
         btnRegistrarme = findViewById(R.id.btnregistrarme); // Inicializar el botón de registrarse
-        spinnerDepartamentos = findViewById(R.id.spinner); // Inicializar el spinner
-
-        // Obtener los departamentos de la base de datos
-        List<String> departamentos = dbHelper.getDepartamentos();
-
-        // Crear un adaptador para el spinner usando el diseño personalizado
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                R.layout.spinner_item, // Usar el archivo de diseño del spinner
-                departamentos
-        );
-
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerDepartamentos.setAdapter(adapter);
 
         // Configurar la acción del botón de inicio de sesión
         btnIngresar.setOnClickListener(new View.OnClickListener() {
@@ -68,6 +51,12 @@ public class LoginActivity extends AppCompatActivity {
                     if (existeUsuario) {
                         // Obtener el id_usuario y el nombre del usuario
                         idUsuario = dbHelper.obtenerIdUsuario(usuario);
+
+                        // Guardar el idUsuario en SharedPreferences
+                        SharedPreferences sharedPreferences = getSharedPreferences("nombre_prefs", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putInt("Id_Usuario", idUsuario); // Guardar el idUsuario
+                        editor.apply();
 
                         // Si las credenciales son correctas, redirigir a otra actividad
                         Toast.makeText(LoginActivity.this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();

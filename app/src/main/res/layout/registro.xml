@@ -48,23 +48,6 @@
                     android:textColor="#070707"
                     android:textSize="34sp"
                     android:textStyle="bold" />
-                <TextView
-                    android:id="@+id/hintTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="DEPARTAMENTO:"
-                    android:visibility="visible"/>
-
-                <Spinner
-                    android:id="@+id/spinner_REGISTRO"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-
-                    android:background="@drawable/custom_edittext"
-                    android:popupBackground="@color/blue"
-                    android:spinnerMode="dropdown"
-                    android:textColor="@color/black"/>
 
                 <EditText
                     android:id="@+id/txtnombreusuario"

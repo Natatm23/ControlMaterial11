@@ -19,7 +19,7 @@ import java.util.List;
 public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "Reportes_material.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     private static final String TABLE_LOGIN = "Login";
     private static final String TABLE_REPORTES = "Reportes";
@@ -30,6 +30,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String COLUMN_PASSWORD = "Contraseña";
 
     public static final String COLUMN_ID_TICKET = "Id_ticket";
+    public static final String COLUMN_DEPARTAMENTO = "Departamento";
     public static final String COLUMN_FECHA_ASIGNACION = "Fecha_asignacion";
     public static final String COLUMN_FECHA_REPARACION = "Fecha_reparacion";
     public static final String COLUMN_COLONIA = "Colonia";
@@ -62,6 +63,7 @@ public class DBHelper extends SQLiteOpenHelper {
         String CREATE_REPORTES_TABLE = "CREATE TABLE " + TABLE_REPORTES + "("
                 + COLUMN_ID_TICKET + " INTEGER PRIMARY KEY, "
                 + COLUMN_ID_USUARIO + " INTEGER NOT NULL, "
+                + COLUMN_DEPARTAMENTO + " TEXT NOT NULL, "
                 + COLUMN_FECHA_ASIGNACION + " DATE NOT NULL, "
                 + COLUMN_FECHA_REPARACION + " DATE NOT NULL, "
                 + COLUMN_COLONIA + " TEXT NOT NULL, "
@@ -93,11 +95,16 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (oldVersion < 2) {
+            db.execSQL("ALTER TABLE " + TABLE_REPORTES + " ADD COLUMN " + COLUMN_DEPARTAMENTO + " TEXT NOT NULL");
+        }
+
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_LOGIN);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_REPORTES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DEPARTAMENTOS);
         onCreate(db);
     }
+
 
     private byte[] reducirImagen(Uri imageUri, Context context) throws IOException {
         // Obtener el tamaño original de la imagen
@@ -204,7 +211,7 @@ public class DBHelper extends SQLiteOpenHelper {
         Cursor cursor = null;
 
         try {
-            String query = "SELECT Id_ticket, Fecha_asignacion, Fecha_reparacion, Colonia, Tipo_suelo, Direccion, Reportante, " +
+            String query = "SELECT Id_ticket, Departamento,Fecha_asignacion, Fecha_reparacion, Colonia, Tipo_suelo, Direccion, Reportante, " +
                     "Telefono_reportante, Reparador, Material, Imagen_antes, Imagen_despues " +
                     "FROM " + TABLE_REPORTES + " WHERE Id_ticket = ?";
             cursor = db.rawQuery(query, new String[]{String.valueOf(Id_ticket)});
@@ -275,7 +282,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<Reporte_sincronizar> reportes = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String query = "SELECT Id_ticket, Fecha_asignacion, Fecha_reparacion, Colonia, Tipo_suelo, Direccion, " +
+        String query = "SELECT Id_ticket, Departamento, Fecha_asignacion, Fecha_reparacion, Colonia, Tipo_suelo, Direccion, " +
                 "Reportante, Telefono_reportante, Reparador, Material, Imagen_antes, Imagen_despues " +
                 "FROM " + TABLE_REPORTES;
 
@@ -285,6 +292,7 @@ public class DBHelper extends SQLiteOpenHelper {
             do {
                 try {
                     String idTicket = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ID_TICKET));
+                    String Departamento = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DEPARTAMENTO));
                     String fechaAsignacion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FECHA_ASIGNACION));
                     String fechaReparacion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FECHA_REPARACION));
                     String colonia = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_COLONIA));
@@ -300,7 +308,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
                     // Cambiamos a Reporte_sincronizar
                     Reporte_sincronizar reporte = new Reporte_sincronizar(
-                            idTicket, fechaAsignacion, fechaReparacion, colonia, tipoSuelo,
+                            idTicket, Departamento,fechaAsignacion, fechaReparacion, colonia, tipoSuelo,
                             direccion, reportante, telefonoReportante, reparador,
                             material, imagenAntes, imagenDespues
                     );
@@ -314,8 +322,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return reportes;
     }
-
-
 
     public int obtenerIdUsuario(String username) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -355,11 +361,12 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
-    public boolean actualizarReporte(int id_ticket, String colonia, String direccion, String reportante,
+    public boolean actualizarReporte(int id_ticket,String Departamento,String colonia, String direccion, String reportante,
                                      String telefonoReportante, String tipoSuelo, String reparador,
                                      String material,String fechaAsignacion, String fechaReparacion, byte[] imagenAntes, byte[] imagenDespues) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
+        values.put("Departamento", Departamento);
         values.put("Colonia", colonia);
         values.put("Direccion", direccion);
         values.put("Reportante", reportante);

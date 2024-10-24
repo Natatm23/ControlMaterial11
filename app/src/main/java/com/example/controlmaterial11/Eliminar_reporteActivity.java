@@ -5,15 +5,20 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import com.bumptech.glide.Glide;
 import com.example.controlmaterial11.databinding.ActivityEliminarReporteBinding;
 
+import java.util.List;
+
 public class Eliminar_reporteActivity extends DrawerBaseActivity {
     ActivityEliminarReporteBinding eliminarReporteBinding;
     DBHelper dbHelper; // Instancia de DBHelper
     private int id_ticketActual = -1;  // Variable para almacenar el ID del reporte actual
+    private Spinner spinnerDepartamento;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +51,21 @@ public class Eliminar_reporteActivity extends DrawerBaseActivity {
                 mostrarDialogoConfirmacion();
             }
         });
+        spinnerDepartamento = findViewById(R.id.spinner);
+
+        // Obtener los departamentos de la base de datos
+        List<String> departamentos = dbHelper.getDepartamentos();
+
+        // Crear un adaptador para el spinner usando el diseño personalizado
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                R.layout.spinner_item, // Usar el archivo de diseño del spinner
+                departamentos
+        );
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerDepartamento.setAdapter(adapter);
+        
     }
 
     private void buscarYMostrarReporte(int id_ticket) {
@@ -65,6 +85,7 @@ public class Eliminar_reporteActivity extends DrawerBaseActivity {
             String telefonoReportante = cursor.getString(cursor.getColumnIndexOrThrow("Telefono_reportante"));
             String reparador = cursor.getString(cursor.getColumnIndexOrThrow("Reparador"));
             String material = cursor.getString(cursor.getColumnIndexOrThrow("Material"));
+            String departamento = cursor.getString(cursor.getColumnIndexOrThrow("Departamento"));  // Asegúrate de tener esta columna
 
             byte[] imagenAntesBlob = cursor.getBlob(cursor.getColumnIndexOrThrow("Imagen_antes"));
             byte[] imagenDespuesBlob = cursor.getBlob(cursor.getColumnIndexOrThrow("Imagen_despues"));
@@ -95,7 +116,14 @@ public class Eliminar_reporteActivity extends DrawerBaseActivity {
                 eliminarReporteBinding.imageViewEvidenciaDespues.setImageResource(R.drawable.info);
             }
 
-            // Cierra el cursor después de usarlo
+            // Seleccionar el valor correcto en el Spinner de departamentos
+            if (departamento != null) {
+                int position = ((ArrayAdapter<String>) spinnerDepartamento.getAdapter()).getPosition(departamento);
+                if (position >= 0) {
+                    spinnerDepartamento.setSelection(position);
+                }
+            }
+
             cursor.close();
         } else {
             Toast.makeText(this, "Reporte no encontrado", Toast.LENGTH_SHORT).show();
