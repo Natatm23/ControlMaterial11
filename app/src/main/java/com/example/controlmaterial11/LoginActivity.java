@@ -52,10 +52,14 @@ public class LoginActivity extends AppCompatActivity {
                         // Obtener el id_usuario y el nombre del usuario
                         idUsuario = dbHelper.obtenerIdUsuario(usuario);
 
-                        // Guardar el idUsuario en SharedPreferences
-                        SharedPreferences sharedPreferences = getSharedPreferences("nombre_prefs", MODE_PRIVATE);
+
+                        // Guardar el idUsuario y el nombre de usuario en SharedPreferences
+                        SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putInt("Id_Usuario", idUsuario); // Guardar el idUsuario
+                        editor.putString("user_name", usuario);  // Guardar el nombre de usuario//////////
+                        editor.apply();
+
                         editor.apply();
 
                         // Si las credenciales son correctas, redirigir a otra actividad

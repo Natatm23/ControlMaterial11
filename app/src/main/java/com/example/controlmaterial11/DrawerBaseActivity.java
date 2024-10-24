@@ -62,11 +62,12 @@ public class DrawerBaseActivity extends AppCompatActivity implements NavigationV
         View headerView = navigationView.getHeaderView(0);
         TextView txtUsuario = headerView.findViewById(R.id.txt_usuario);
 
-        // Obtener el nombre de usuario desde SharedPreferences
+// Obtener el nombre de usuario desde SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         String userName = sharedPreferences.getString("user_name", "Nombre Usuario"); // Valor predeterminado
-        Log.d("DrawerBaseActivity", "Nombre de usuario recuperado: " + userName);
         txtUsuario.setText(userName);
+
+
     }
 
     @Override
@@ -75,10 +76,10 @@ public class DrawerBaseActivity extends AppCompatActivity implements NavigationV
         int id = item.getItemId();
 
         if (id == R.id.cerrar_sesion) {
-            // Limpiar las preferencias del usuario si es necesario
+            // Limpiar las preferencias del usuario
             SharedPreferences preferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
             SharedPreferences.Editor editor = preferences.edit();
-            editor.clear();  // Limpia las preferencias del usuario, si es necesario
+            editor.clear();  // Limpia las preferencias del usuario
             editor.apply();
 
             // Cerrar la aplicación completamente
