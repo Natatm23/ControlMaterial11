@@ -213,7 +213,7 @@ public class GenerarreporteActivity extends DrawerBaseActivity {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         // Obtener el id_usuario de SharedPreferences
-        SharedPreferences sharedPreferences = context.getSharedPreferences("nombre_prefs", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         int idUsuario = sharedPreferences.getInt("Id_Usuario", -1); // -1 si no se encuentra
 
         if (idUsuario == -1) {

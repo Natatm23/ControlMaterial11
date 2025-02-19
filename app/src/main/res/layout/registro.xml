@@ -75,7 +75,7 @@
                 android:drawablePadding="12dp"
                 android:ems="10"
                 android:hint="NUMERO DE EMPLEADO"
-                android:inputType="textEmailAddress"
+                android:inputType="number"
                 android:textColor="@color/black"
                 android:textColorHint="@color/cardview_dark_background" />
 

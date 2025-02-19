@@ -402,6 +402,7 @@ public class DBHelper extends SQLiteOpenHelper {
             // Insertar el segundo departamento
             statement.clearBindings();
             statement.bindLong(1, 5241);
+                
             statement.bindString(2, "PADRON DE USUARIOS");
             statement.execute();
 

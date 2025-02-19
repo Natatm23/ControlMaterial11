@@ -182,6 +182,7 @@
                     android:hint="TELÉFONO REPORTANTE"
                     android:inputType="number"
                     android:textColor="@color/black"
+                    android:maxLength="10"
                     android:textColorHint="@color/cardview_dark_background" />
 
                 <EditText
