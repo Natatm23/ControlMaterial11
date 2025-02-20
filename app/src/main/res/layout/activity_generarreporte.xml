@@ -154,6 +154,27 @@
                     android:textColor="@color/black"
                     android:textColorHint="@color/cardview_dark_background" />
 
+                    //Etiqueta spinner tipo de suelo
+                <TextView
+                    android:id="@+id/TXT_tipo_suelo_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TIPO DE SUELO:"
+                    android:textColor="@color/black"
+                    android:visibility="visible"/>
+
+                //spinner de prueba para el tipo de suelo
+                <Spinner
+                    android:id="@+id/spinner_tipo_suelo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:background="@drawable/custom_edittext"
+                    android:popupBackground="@color/blue"
+                    android:spinnerMode="dropdown"
+                    android:textColor="@color/black"/>
+
+
                 <EditText
                     android:id="@+id/txt_reportante"
                     android:layout_width="match_parent"

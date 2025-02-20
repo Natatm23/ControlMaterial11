@@ -18,12 +18,17 @@ import java.util.List;
 
 public class DBHelper extends SQLiteOpenHelper {
 
+    //CREACION DE LA BASE DE DATOS
     private static final String DATABASE_NAME = "Reportes_material.db";
     private static final int DATABASE_VERSION = 3;
 
+    //CREACION DE LAS TABLAS A USAR EN LA BASE DE DATOS
     private static final String TABLE_LOGIN = "Login";
     private static final String TABLE_REPORTES = "Reportes";
     private static final String TABLE_DEPARTAMENTOS = "Departamentos";
+    private static final String TABLE_TIPOSUELO = "Tipo_suelo";
+
+
 
     public static final String COLUMN_ID_USUARIO = "Id_Usuario";
     private static final String COLUMN_USERNAME = "Usuario";
@@ -45,6 +50,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final  String COLUMN_ID_DEPARTAMENTO = "Id_Departamento";
     public  static final String COLUMN_NOMBRE_DEPARTAMENTO = "Nombre_Departamento";
+
+    
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
